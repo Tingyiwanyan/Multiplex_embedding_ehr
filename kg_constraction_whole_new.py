@@ -5,10 +5,10 @@ import time
 import pandas as pd
 from scipy.stats import iqr
 import json
-from LSTM import LSTM_model
+#from LSTM import LSTM_model
 from Data_process import kg_process_data
-from Dynamic_hgm_icu_whole import dynamic_hgm
-from MLP import MLP_model
+from Dynamic_hgm_death_whole import dynamic_hgm
+#from MLP import MLP_model
 
 
 class Kg_construct_ehr():
