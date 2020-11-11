@@ -1,0 +1,6 @@
+11/4 meeting:
+1.Create Multiplex Embedding Network for EHR data
+2.Tentative tasks: Mortality Prediction, Intubation, ICU
+3.Node:Patient Representation(time sequence model,e.g:retain). Edge:relation type for different variables(lab, vital)
+4.Edge connection: based on Mutial Information of this lab test distrubation
+5.Convert into node classification problem
