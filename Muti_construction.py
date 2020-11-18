@@ -13,6 +13,7 @@ class Multiplex_network():
         self.kg = kg
         self.time_seq_length = 4
         self.time_step_length = 6
+        self.predict_window_prior = self.time_seq_length * self.time_step_length
         pick_num = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 19,
                     20, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 36, 37, 38, 41, 43,
                     45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 66,
