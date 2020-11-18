@@ -36,7 +36,7 @@ class Multiplex_network():
             self.time_seq_index.append(i)
             central_node_variable = variables[i]
             self.time_seq_variable_name.append(central_node_variable)
-            if self.kg.dic_patient[i]['death_flag'] == 0:
+            if self.kg.dic_patient[central_node_variable]['death_flag'] == 0:
                 flag = 0
                 #neighbor_patient = self.kg.dic_death[0]
             else:
