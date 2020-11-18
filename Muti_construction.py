@@ -67,7 +67,7 @@ class Multiplex_network():
                 #self.patient_pos_sample_vital[j, 0, :] = one_data_vital
                 #self.patient_pos_sample_lab[j, 0, :] = one_data_lab
                 one_data = np.concatenate([one_data_vital,one_data_lab])
-                self.time_seq_variable[count,:,j] = one_data
+                self.time_seq_variable[i,:,j] = one_data
 
     def assign_value_patient(self, patientid, start_time, end_time):
         self.one_sample = np.zeros(self.item_size)
