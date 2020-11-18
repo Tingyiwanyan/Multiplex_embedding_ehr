@@ -12,6 +12,7 @@ class Multiplex_network():
     def __init__(self, kg):
         self.kg = kg
         self.time_seq_length = 4
+        self.time_step_length = 6
         pick_num = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 19,
                     20, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 36, 37, 38, 41, 43,
                     45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 66,
@@ -40,7 +41,7 @@ class Multiplex_network():
             time_seq_int.sort()
             # time_index = 0
             # for j in self.time_seq_int:
-            for j in range(self.time_sequence):
+            for j in range(self.time_seq_length):
                 # if time_index == self.time_sequence:
                 #    break
                 if flag == 0:
