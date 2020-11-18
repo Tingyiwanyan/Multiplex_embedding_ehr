@@ -45,17 +45,17 @@ class Multiplex_network():
                 # if time_index == self.time_sequence:
                 #    break
                 if flag == 0:
-                    pick_death_hour = self.kg.dic_patient[center_node_index][
+                    pick_death_hour = self.kg.dic_patient[i][
                         'pick_time']  # self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
                     start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
                     end_time = start_time + self.time_step_length
                 else:
-                    start_time = self.kg.dic_patient[center_node_index][
+                    start_time = self.kg.dic_patient[i][
                                      'death_hour'] - self.predict_window_prior + float(
                         j) * self.time_step_length
                     end_time = start_time + self.time_step_length
-                one_data_vital = self.assign_value_patient(center_node_index, start_time, end_time)
-                one_data_lab = self.assign_value_lab(center_node_index, start_time, end_time)
+                one_data_vital = self.assign_value_patient(i, start_time, end_time)
+                one_data_lab = self.assign_value_lab(i, start_time, end_time)
                 # one_data_icu_label = self.assign_value_icu_intubation(center_node_index, start_time, end_time)
                 # one_data_demo = self.assign_value_demo(center_node_index)
                 #self.patient_pos_sample_vital[j, 0, :] = one_data_vital
