@@ -30,17 +30,19 @@ class Multiplex_network():
         self.time_seq_variable = np.zeros((self.data_length,self.item_size+self.lab_size,self.time_seq_length))
         self.time_seq_index = []
         self.time_seq_variable_name = []
-        count = 0
-        for i in self.kg.dic_patient.keys():
-            self.time_seq_index.append(count)
-            self.time_seq_variable_name.append(i)
+        #count = 0
+        variables = list(self.kg.dic_patient.keys())
+        for i in range(data_length):
+            self.time_seq_index.append(i)
+            central_node_variable = variables[i]
+            self.time_seq_variable_name.append(central_node_variable)
             if self.kg.dic_patient[i]['death_flag'] == 0:
                 flag = 0
                 #neighbor_patient = self.kg.dic_death[0]
             else:
                 flag = 1
                 #neighbor_patient = self.kg.dic_death[1]
-            time_seq = self.kg.dic_patient[i]['prior_time_vital'].keys()
+            time_seq = self.kg.dic_patient[central_node_variable]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
             # time_index = 0
@@ -49,24 +51,23 @@ class Multiplex_network():
                 # if time_index == self.time_sequence:
                 #    break
                 if flag == 0:
-                    pick_death_hour = self.kg.dic_patient[i][
+                    pick_death_hour = self.kg.dic_patient[central_node_variable][
                         'pick_time']  # self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
                     start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
                     end_time = start_time + self.time_step_length
                 else:
-                    start_time = self.kg.dic_patient[i][
+                    start_time = self.kg.dic_patient[central_node_variable][
                                      'death_hour'] - self.predict_window_prior + float(
                         j) * self.time_step_length
                     end_time = start_time + self.time_step_length
-                one_data_vital = self.assign_value_patient(i, start_time, end_time)
-                one_data_lab = self.assign_value_lab(i, start_time, end_time)
+                one_data_vital = self.assign_value_patient(central_node_variable, start_time, end_time)
+                one_data_lab = self.assign_value_lab(central_node_variable, start_time, end_time)
                 # one_data_icu_label = self.assign_value_icu_intubation(center_node_index, start_time, end_time)
                 # one_data_demo = self.assign_value_demo(center_node_index)
                 #self.patient_pos_sample_vital[j, 0, :] = one_data_vital
                 #self.patient_pos_sample_lab[j, 0, :] = one_data_lab
                 one_data = np.concatenate([one_data_vital,one_data_lab])
                 self.time_seq_variable[count,:,j] = one_data
-                count += 1
 
     def assign_value_patient(self, patientid, start_time, end_time):
         self.one_sample = np.zeros(self.item_size)
