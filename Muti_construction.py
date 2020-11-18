@@ -32,7 +32,7 @@ class Multiplex_network():
         self.time_seq_variable_name = []
         #count = 0
         variables = list(self.kg.dic_patient.keys())
-        for i in range(data_length):
+        for i in range(self.data_length):
             self.time_seq_index.append(i)
             central_node_variable = variables[i]
             self.time_seq_variable_name.append(central_node_variable)
