@@ -8,6 +8,7 @@ import json
 #from LSTM import LSTM_model
 from Data_process import kg_process_data
 from Dynamic_hgm_death_whole import dynamic_hgm
+from Muti_construction import Multiplex_network
 #from MLP import MLP_model
 
 
