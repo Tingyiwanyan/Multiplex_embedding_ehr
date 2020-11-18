@@ -26,7 +26,7 @@ class Multiplex_network():
         self.time_seq_index = []
         self.time_seq_variable_name = []
         count = 0
-        for i in kg.dic_patient.keys():
+        for i in self.kg.dic_patient.keys():
             self.time_seq_index.append(count)
             self.time_seq_variable_name.append(i)
             if self.kg.dic_patient[i]['death_flag'] == 0:
