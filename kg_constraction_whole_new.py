@@ -732,7 +732,7 @@ if __name__ == "__main__":
     # LSTM_.config_model()
     # LSTM_.train()
     dhgm = dynamic_hgm(kg, process_data)
-    #multi = Multiplex_network(kg)
+    multi = Multiplex_network(kg)
 
 
 

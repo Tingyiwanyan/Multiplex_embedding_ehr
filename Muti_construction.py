@@ -19,6 +19,7 @@ class Multiplex_network():
         pick_num = np.array(pick_num)
         self.feature = list(np.array(list(self.kg.dic_vital.keys()) + list(self.kg.dic_lab.keys()))[pick_num])
         self.feature_length = len(pick_num)
+        self.data_length = len(list(self.kg.dic_patient.keys()))
 
     def compute_time_seq(self):
         self.time_seq_variable = np.zeros((self.data_length,self.feature_length,self.time_seq_length))
