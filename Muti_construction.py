@@ -69,6 +69,11 @@ class Multiplex_network():
                 one_data = np.concatenate([one_data_vital,one_data_lab])
                 self.time_seq_variable[i,:,j] = one_data
 
+    def compute_variable_correlation(self):
+        for i in range(self.data_length):
+            for j in range(self.data_length):
+
+
     def assign_value_patient(self, patientid, start_time, end_time):
         self.one_sample = np.zeros(self.item_size)
         self.freq_sample = np.zeros(self.item_size)

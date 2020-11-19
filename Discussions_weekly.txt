@@ -4,3 +4,7 @@
 3.Node:Patient Representation(time sequence model,e.g:retain). Edge:relation type for different variables(lab, vital)
 4.Edge connection: based on Mutial Information of this lab test distrubation
 5.Convert into node classification problem
+
+11/18 meeting:
+1. Concatenate Time Variable Matrix for Computing Time sequence correlation, using gpu
+2. Build graph and run Result.
