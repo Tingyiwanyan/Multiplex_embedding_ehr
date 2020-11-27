@@ -352,6 +352,9 @@ class con_regular():
         softmax_weight_idx_negative = tf.constant([i + self.positive_lab_size for i in range(self.negative_lab_size)])
         self.softmax_negative_patient = tf.gather(self.relation_weight_softmax, softmax_weight_idx_negative, axis=1)
 
+        self.softmax_skip_patient = tf.expand_dims(self.softmax_skip_patient,axis=3)
+        self.softmax_negative_patient = tf.expand_dims(self.softmax_negative_patient,axis=3)
+
         self.softmax_weight_pos_broad = tf.broadcast_to(self.softmax_skip_patient, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
 
