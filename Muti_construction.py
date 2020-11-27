@@ -25,6 +25,9 @@ class Multiplex_network():
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
         self.lab_size = len(list(kg.dic_lab.keys()))
+        self.init_hiddenstate_att = tf.keras.backend.placeholder([None,
+                                                                  1 + self.positive_lab_size + self.negative_lab_size + self.neighbor_pick_skip + self.neighbor_pick_neg,
+                                                                  self.latent_dim])
 
     def compute_time_seq(self):
         self.time_seq_variable = np.zeros((self.data_length,self.item_size+self.lab_size,self.time_seq_length))
@@ -69,9 +72,51 @@ class Multiplex_network():
                 one_data = np.concatenate([one_data_vital,one_data_lab])
                 self.time_seq_variable[i,:,j] = one_data
 
-    def compute_variable_correlation(self):
-        for i in range(self.data_length):
-            for j in range(self.data_length):
+    def compute_time_seq_single(self,central_node_variable):
+        """
+        compute single node feature values
+        """
+        self.time_seq_variable_name.append(central_node_variable)
+        if self.kg.dic_patient[central_node_variable]['death_flag'] == 0:
+            flag = 0
+            # neighbor_patient = self.kg.dic_death[0]
+        else:
+            flag = 1
+            # neighbor_patient = self.kg.dic_death[1]
+        time_seq = self.kg.dic_patient[central_node_variable]['prior_time_vital'].keys()
+        time_seq_int = [np.int(k) for k in time_seq]
+        time_seq_int.sort()
+        # time_index = 0
+        # for j in self.time_seq_int:
+        for j in range(self.time_seq_length):
+            # if time_index == self.time_sequence:
+            #    break
+            if flag == 0:
+                pick_death_hour = self.kg.dic_patient[central_node_variable][
+                    'pick_time']  # self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
+                start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
+                end_time = start_time + self.time_step_length
+            else:
+                start_time = self.kg.dic_patient[central_node_variable][
+                                 'death_hour'] - self.predict_window_prior + float(
+                    j) * self.time_step_length
+                end_time = start_time + self.time_step_length
+            one_data_vital = self.assign_value_patient(central_node_variable, start_time, end_time)
+            one_data_lab = self.assign_value_lab(central_node_variable, start_time, end_time)
+            # one_data_icu_label = self.assign_value_icu_intubation(center_node_index, start_time, end_time)
+            # one_data_demo = self.assign_value_demo(center_node_index)
+            # self.patient_pos_sample_vital[j, 0, :] = one_data_vital
+            # self.patient_pos_sample_lab[j, 0, :] = one_data_lab
+            one_data = np.concatenate([one_data_vital, one_data_lab])
+        return one_data
+
+
+
+
+
+
+
+
 
 
     def assign_value_patient(self, patientid, start_time, end_time):
