@@ -749,6 +749,7 @@ class con_regular():
         """
         compute single node feature values
         """
+        time_seq_variable = np.zeros((self.item_size + self.lab_size, self.time_sequence))
         if self.kg.dic_patient[central_node_variable]['death_flag'] == 0:
             flag = 0
             # neighbor_patient = self.kg.dic_death[0]
@@ -780,8 +781,9 @@ class con_regular():
             # self.patient_pos_sample_vital[j, 0, :] = one_data_vital
             # self.patient_pos_sample_lab[j, 0, :] = one_data_lab
             one_data = np.concatenate([one_data_vital, one_data_lab])
+            time_seq_variable[:,j] = one_data
 
-        return one_data
+        return time_seq_variable
 
     def compute_relation_indicator(self,central_node,context_node):
         center_data = self.compute_time_seq_single(central_node)
