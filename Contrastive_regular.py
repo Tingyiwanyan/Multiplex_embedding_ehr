@@ -760,7 +760,7 @@ class con_regular():
         time_seq_int.sort()
         # time_index = 0
         # for j in self.time_seq_int:
-        for j in range(self.time_seq_length):
+        for j in range(self.time_sequence):
             # if time_index == self.time_sequence:
             #    break
             if flag == 0:
