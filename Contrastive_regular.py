@@ -372,8 +372,8 @@ class con_regular():
         """
         project x_origin into relation translation space
         """
-        self.x_origin = tf.expand_dims(self.x_origin,axis=2)
-        self.x_origin_contrast = tf.broadcast_to(self.x_origin, [self.batch_size, 1, self.item_size + self.lab_size,
+        self.x_origin_ = tf.expand_dims(self.x_origin,axis=2)
+        self.x_origin_contrast = tf.broadcast_to(self.x_origin_, [self.batch_size, 1, self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
 
     def get_positive_patient(self, center_node_index):
