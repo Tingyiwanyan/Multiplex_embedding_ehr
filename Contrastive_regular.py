@@ -612,6 +612,7 @@ class con_regular():
         # self.softmax_loss()
         self.build_dhgm_model()
         self.get_latent_rep_hetero()
+        """
         self.SGNN_loss()
         self.SGNN_loss_contrast()
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
@@ -620,6 +621,7 @@ class con_regular():
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
+        """
 
 
     def assign_value_patient(self, patientid, start_time, end_time):
