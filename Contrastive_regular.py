@@ -324,6 +324,9 @@ class con_regular():
         self.x_skip_contrast_ = self.x_skip_patient
         self.x_negative_contrast_ = self.x_negative_patient
 
+        self.x_skip_contrast_ = tf.expand_dims(self.x_skip_contrast_,axis=2)
+        self.x_negative_contrast_ = tf.expand_dims(self.x_negative_contrast_,axis=2)
+
         self.x_skip_contrast = tf.broadcast_to(self.x_skip_contrast_, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
 
@@ -331,6 +334,8 @@ class con_regular():
                         [self.batch_size, self.negative_sample_size,self.item_size + self.lab_size,
                          self.latent_dim + self.latent_dim_demo])
 
+        self.relation_patients = tf.broadcast_to(self.relation_patients,axis=0)
+        self.relation_patients = tf.broadcast_to(self.relation_patients,axis=0)
         self.relation_patients_broad_pos = tf.broadcast_to(self.relation_patients, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
 
@@ -364,7 +369,8 @@ class con_regular():
         """
         project x_origin into relation translation space
         """
-        self.x_origin_contrast = tf.broadcast_to(self.x_skip_contrast_, [self.batch_size, 1, self.item_size + self.lab_size,
+        self.x_origin = tf.expand_dims(self.x_origin,axis=2)
+        self.x_origin_contrast = tf.broadcast_to(self.x_origin, [self.batch_size, 1, self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
 
     def get_positive_patient(self, center_node_index):
