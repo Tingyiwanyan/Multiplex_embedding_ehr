@@ -749,7 +749,6 @@ class con_regular():
         """
         compute single node feature values
         """
-        self.time_seq_variable_name.append(central_node_variable)
         if self.kg.dic_patient[central_node_variable]['death_flag'] == 0:
             flag = 0
             # neighbor_patient = self.kg.dic_death[0]
