@@ -334,8 +334,8 @@ class con_regular():
                         [self.batch_size, self.negative_sample_size,self.item_size + self.lab_size,
                          self.latent_dim + self.latent_dim_demo])
 
-        self.relation_patients = tf.broadcast_to(self.relation_patients,axis=0)
-        self.relation_patients = tf.broadcast_to(self.relation_patients,axis=0)
+        self.relation_patients = tf.expand_dims(self.relation_patients,axis=0)
+        self.relation_patients = tf.expand_dims(self.relation_patients,axis=0)
         self.relation_patients_broad_pos = tf.broadcast_to(self.relation_patients, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
 
