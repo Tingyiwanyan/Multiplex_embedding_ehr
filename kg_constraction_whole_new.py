@@ -9,6 +9,7 @@ import json
 from Data_process import kg_process_data
 from Dynamic_hgm_death_whole import dynamic_hgm
 from Muti_construction import Multiplex_network
+from Contrastive_regular import con_regular
 #from MLP import MLP_model
 
 
@@ -732,6 +733,7 @@ if __name__ == "__main__":
     # LSTM_.config_model()
     # LSTM_.train()
     dhgm = dynamic_hgm(kg, process_data)
+    contrastive = con_regular(kg,process_data)
     #multi = Multiplex_network(kg)
 
 
