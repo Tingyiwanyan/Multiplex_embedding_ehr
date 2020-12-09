@@ -794,6 +794,7 @@ class con_regular():
         center_data = self.compute_time_seq_single(central_node)
         context_data = self.compute_time_seq_single(context_node)
         for i in range(self.item_size+self.lab_size):
+            a = 1
             
 
 
