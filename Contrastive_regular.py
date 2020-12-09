@@ -791,11 +791,31 @@ class con_regular():
         return time_seq_variable
 
     def compute_relation_indicator(self,central_node,context_node):
-        center_data = self.compute_time_seq_single(central_node)
-        context_data = self.compute_time_seq_single(context_node)
+        softmax_weight = np.zeros((self.item_size+self.lab_size))
+        #features = list(self.kg.dic_vital.keys())+list(self.kg.dic_lab.keys())
+        center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
+        context_data = np.mean(self.compute_time_seq_single(context_node),axis=1)
+        difference = np.abs(center_data-context_data)
         for i in range(self.item_size+self.lab_size):
-            a = 1
-            
+            if difference[i] < self.softmax_weight_threshold:
+                softmax_weight[i] = 1
+
+        return softmax_weight
+
+    def compute_soft_weight(self):
+        soft_weight = np.zeros((self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
+        variable_pos = np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2)
+        variable_neg = np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2)
+        variable_compare = np.concatenate((variable_pos,variable_neg),axis=1)
+        variable_origin = variable_pos[0,:,:]
+        for i in range(self.positive_lab_size+self.negative_lab_size):
+            pos_compare = variable_compare[1+i,:,:]
+            compare = np.abs(variable_origin-pos_compare)
+            for j in range(self.item_size+self.lab_size):
+                if compare[j] < self.softmax_weight_threshold:
+                    soft_weight[i,j] = 1
+
+        return soft_weight
 
 
 
@@ -812,6 +832,8 @@ class con_regular():
             (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.demo_size))
         train_one_batch_com = np.zeros(
             (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.com_size))
+        train_one_batch_soft_weight = np.zeros(
+        (data_length,self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
         # train_one_batch_item = np.zeros((data_length,self.positive_lab_size+self.negative_lab_size,self.item_size))
         train_one_batch_mortality = np.zeros((data_length, 2, 2))
         one_batch_logit = np.zeros((data_length, 2))
@@ -853,6 +875,7 @@ class con_regular():
 
             self.get_positive_patient(self.patient_id)
             self.get_negative_patient(self.patient_id)
+            self.train_one_data_soft_weight = self.compute_soft_weight()
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -864,8 +887,9 @@ class con_regular():
             train_one_batch_demo[i, :, :] = train_one_data_demo
             train_one_batch_com[i, :, :] = train_one_data_com
             train_one_batch_icu_intubation[i,:,:,:] = train_one_data_icu_intubation
+            train_one_batch_soft_weight[i,:,:] = self.train_one_data_soft_weight
 
-        return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation
+        return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation,train_one_batch_soft_weight
 
 
     def train(self):
@@ -881,7 +905,7 @@ class con_regular():
             print('epoch')
             print(j)
             for i in range(iteration):
-                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
+                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation,self.one_batch_soft_weight = self.get_batch_train(
                     self.batch_size, i * self.batch_size, self.train_data)
 
                 self.err_ = self.sess.run([self.negative_sum, self.train_step_neg],
@@ -892,7 +916,8 @@ class con_regular():
                                                      # self.lab_test: self.one_batch_item,
                                                      self.mortality: self.one_batch_mortality,
                                                      self.init_hiddenstate: init_hidden_state,
-                                                     self.input_icu_intubation:self.one_batch_icu_intubation})
+                                                     self.input_icu_intubation:self.one_batch_icu_intubation,
+                                                     self.relation_weight:self.one_batch_soft_weight})
                 print(self.err_[0])
 
                 """
@@ -909,7 +934,7 @@ class con_regular():
         test_length = len(data)
         init_hidden_state = np.zeros(
             (test_length, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
-        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com,self.one_batch_icu_intubation = self.get_batch_train(
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com,self.one_batch_icu_intubation,self.one_batch_soft_weight = self.get_batch_train(
             test_length, 0, data)
         self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.test_data_batch_vital,
                                                                          self.input_x_lab: self.test_one_batch_lab,
