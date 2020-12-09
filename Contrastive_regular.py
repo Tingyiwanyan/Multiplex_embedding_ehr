@@ -344,6 +344,9 @@ class con_regular():
         self.relation_patients_broad_neg = tf.broadcast_to(self.relation_patients,[self.batch_size, self.negative_sample_size,self.item_size + self.lab_size,
                          self.latent_dim + self.latent_dim_demo])
 
+        self.relation_patients_broad_origin = tf.broadcast_to(self.relation_patients,[self.batch_size,1,self.item_size+self.lab_size,
+                                                                                      self.latent_dim+self.latent_dim_demo])
+
         """
         extract softmax weights
         """
@@ -373,8 +376,10 @@ class con_regular():
         project x_origin into relation translation space
         """
         self.x_origin_ = tf.expand_dims(self.x_origin,axis=2)
-        self.x_origin_contrast = tf.broadcast_to(self.x_origin_, [self.batch_size, 1, self.item_size + self.lab_size,
+        self.x_origin_contrast_ = tf.broadcast_to(self.x_origin_, [self.batch_size, 1, self.item_size + self.lab_size,
                                         self.latent_dim + self.latent_dim_demo])
+
+        self.x_origin_contrast = tf.math.add(self.x_origin_contrast_,self.relation_patients_broad_origin)
 
     def get_positive_patient(self, center_node_index):
         self.patient_pos_sample_vital = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.item_size))
@@ -615,7 +620,7 @@ class con_regular():
         # self.softmax_loss()
         self.build_dhgm_model()
         self.get_latent_rep_hetero()
-        """
+
         self.SGNN_loss()
         self.SGNN_loss_contrast()
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
@@ -624,7 +629,7 @@ class con_regular():
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
-        """
+
 
 
     def assign_value_patient(self, patientid, start_time, end_time):
@@ -788,6 +793,8 @@ class con_regular():
     def compute_relation_indicator(self,central_node,context_node):
         center_data = self.compute_time_seq_single(central_node)
         context_data = self.compute_time_seq_single(context_node)
+        for i in range(self.item_size+self.lab_size):
+            
 
 
 
