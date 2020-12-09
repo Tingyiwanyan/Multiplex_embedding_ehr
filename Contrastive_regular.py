@@ -552,7 +552,7 @@ class con_regular():
         negative_training_norm = tf.math.l2_normalize(self.x_negative_contrast, axis=2)
 
         skip_training = tf.broadcast_to(self.x_origin_contrast,
-                                        [self.batch_size, self.negative_sample_size,self.lab_size+self.item_size
+                                        [self.batch_size, self.negative_sample_size,self.lab_size+self.item_size,
                                          self.latent_dim + self.latent_dim_demo])
 
         skip_training_norm = tf.math.l2_normalize(skip_training, axis=2)
@@ -563,7 +563,7 @@ class con_regular():
 
         sum_log_dot_prod = tf.math.log(tf.math.sigmoid(tf.math.negative(tf.reduce_mean(dot_prod_sum, 1))))
 
-        positive_training = tf.broadcast_to(self.x_origin_contrast, [self.batch_size, self.positive_sample_size,self.lab_size+self.item_size
+        positive_training = tf.broadcast_to(self.x_origin_contrast, [self.batch_size, self.positive_sample_size,self.lab_size+self.item_size,
                                                             self.latent_dim + self.latent_dim_demo])
 
         positive_skip_norm = tf.math.l2_normalize(self.x_skip_contrast, axis=2)
