@@ -23,6 +23,7 @@ class con_regular():
         self.test_data_whole = self.data_process.test_patient_whole
         self.train_data = self.train_data_whole[0]
         self.test_data = self.test_data_whole[0]
+        self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
         self.batch_size = 16
@@ -806,13 +807,13 @@ class con_regular():
 
     def compute_soft_weight(self):
         soft_weight = np.zeros((self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
-        variable_pos = np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2)
-        variable_neg = np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2)
-        variable_compare = np.concatenate((variable_pos,variable_neg),axis=1)
-        variable_origin = variable_pos[0,:,:]
+        self.variable_pos = np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2)
+        self.variable_neg = np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2)
+        self.variable_compare = np.concatenate((self.variable_pos,self.variable_neg),axis=1)
+        self.variable_origin = self.variable_pos[0,:,:]
         for i in range(self.positive_lab_size+self.negative_lab_size):
-            pos_compare = variable_compare[1+i,:,:]
-            compare = np.abs(variable_origin-pos_compare)
+            pos_compare = self.variable_compare[1+i,:,:]
+            compare = np.abs(self.variable_origin-pos_compare)
             for j in range(self.item_size+self.lab_size):
                 if compare[j] < self.softmax_weight_threshold:
                     soft_weight[i,j] = 1
