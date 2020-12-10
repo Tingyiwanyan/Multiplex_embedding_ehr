@@ -1110,3 +1110,12 @@ class con_regular():
         print(np.mean(self.precision_total))
         print("recall_ave_score")
         print(np.mean(self.recall_total))
+
+    def cal_auc(self):
+        self.area = 0
+        self.tp_total.sort()
+        self.fp_total.sort()
+        for i in range(len(self.tp_total) - 1):
+            x = self.fp_total[i + 1] - self.fp_total[i]
+            y = (self.tp_total[i + 1] + self.tp_total[i]) / 2
+            self.area += x * y
