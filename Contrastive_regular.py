@@ -807,12 +807,12 @@ class con_regular():
 
     def compute_soft_weight(self):
         soft_weight = np.zeros((self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
-        self.variable_pos = np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2)
-        self.variable_neg = np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2)
-        self.variable_compare = np.concatenate((self.variable_pos,self.variable_neg),axis=1)
-        self.variable_origin = self.variable_pos[0,:,:]
+        self.variable_pos = np.mean(np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2),axis=0)
+        self.variable_neg = np.mean(np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2),axis=0)
+        self.variable_compare = np.concatenate((self.variable_pos,self.variable_neg),axis=0)
+        self.variable_origin = self.variable_pos[0,:]
         for i in range(self.positive_lab_size+self.negative_lab_size):
-            pos_compare = self.variable_compare[1+i,:,:]
+            pos_compare = self.variable_compare[1+i,:]
             compare = np.abs(self.variable_origin-pos_compare)
             for j in range(self.item_size+self.lab_size):
                 if compare[j] < self.softmax_weight_threshold:
