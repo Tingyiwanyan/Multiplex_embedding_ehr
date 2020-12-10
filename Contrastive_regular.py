@@ -21,8 +21,8 @@ class con_regular():
         # self.hetro_model = hetro_model
         self.train_data_whole = self.data_process.train_patient_whole
         self.test_data_whole = self.data_process.test_patient_whole
-        self.train_data = self.train_data_whole[0]
-        self.test_data = self.test_data_whole[0]
+        #self.train_data = self.train_data_whole[0]
+        #self.test_data = self.test_data_whole[0]
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
@@ -1055,3 +1055,58 @@ class con_regular():
             self.precision_total.append(precision_test)
             self.recall_total.append(recall_test)
             threshold += self.resolution
+
+    def cross_validation(self):
+        self.f1_score_total = []
+        self.acc_total = []
+        self.area_total = []
+        self.test_logit_total = []
+        self.tp_score_total = []
+        self.fp_score_total = []
+        self.precision_score_total = []
+        self.precision_curve_total = []
+        self.recall_score_total = []
+        self.recall_curve_total = []
+        self.test_patient_whole = []
+        feature_len = self.item_size + self.lab_size
+        #self.ave_data_scores_total = np.zeros((self.time_sequence, feature_len))
+
+
+        for i in range(5):
+            self.config_model()
+            self.train_data = self.train_data_whole[i]
+            self.test_data = self.test_data_whole[i]
+            self.train()
+            self.test(self.test_data)
+            self.f1_score_total.append(self.f1_test)
+            self.acc_total.append(self.acc)
+            self.tp_score_total.append(self.tp_total)
+            self.fp_score_total.append(self.fp_total)
+            self.cal_auc()
+            self.area_total.append(self.area)
+            self.precision_score_total.append(self.precision_test)
+            self.recall_score_total.append(self.recall_test)
+            self.precision_curve_total.append(self.precision_total)
+            self.recall_curve_total.append(self.recall_total)
+            self.test_patient_whole.append(self.test_patient)
+            self.test_logit_total.append(self.test_logit)
+            #self.ave_data_scores_total += self.ave_data_scores
+            self.sess.close()
+
+        #self.ave_data_scores_total = self.ave_data_scores_total/5
+        #self.norm = np.linalg.norm(self.ave_data_scores_total)
+        #self.ave_data_scores_total = self.ave_data_scores_total/self.norm
+        self.tp_ave_score = np.sum(self.tp_score_total,0)/5
+        self.fp_ave_score = np.sum(self.fp_score_total,0)/5
+        self.precision_ave_score = np.sum(self.precision_curve_total,0)/5
+        self.recall_ave_score = np.sum(self.recall_curve_total,0)/5
+        print("f1_ave_score")
+        print(np.mean(self.f1_score_total))
+        print("acc_ave_score")
+        print(np.mean(self.acc_total))
+        print("area_ave_score")
+        print(np.mean(self.area_total))
+        print("precision_ave_score")
+        print(np.mean(self.precision_total))
+        print("recall_ave_score")
+        print(np.mean(self.recall_total))
