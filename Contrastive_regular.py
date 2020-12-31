@@ -1071,9 +1071,11 @@ class con_regular():
         feature_len = self.item_size + self.lab_size
         #self.ave_data_scores_total = np.zeros((self.time_sequence, feature_len))
 
-
+        self.config_model()
         for i in range(5):
-            self.config_model()
+            self.sess = tf.InteractiveSession()
+            tf.global_variables_initializer().run()
+            tf.local_variables_initializer().run()
             self.train_data = self.train_data_whole[i]
             self.test_data = self.test_data_whole[i]
             self.train()
