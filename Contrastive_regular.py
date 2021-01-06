@@ -140,12 +140,12 @@ class con_regular():
         """
         Multi relation type for patients
         """
-        #self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
+        self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
         """
         Define orthogonal relation space
         """
         self.orthog_init = tf.keras.initializers.Orthogonal()
-        self.relation_patients = self.orthog_init(shape=self.shape_relation_patient)
+        #self.relation_patients = self.orthog_init(shape=self.shape_relation_patient)
         self.relation_weight = tf.keras.backend.placeholder([None,self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size])
         self.relation_weight_softmax = tf.nn.softmax(self.relation_weight)
 
@@ -1090,7 +1090,9 @@ class con_regular():
             self.tp_score_total.append(self.tp_total)
             self.fp_score_total.append(self.fp_total)
             self.cal_auc()
+            self.cal_auprc()
             self.area_total.append(self.area)
+            self.auprc_total.append(self.area_auprc)
             self.precision_score_total.append(self.precision_test)
             self.recall_score_total.append(self.recall_test)
             self.precision_curve_total.append(self.precision_total)
@@ -1117,6 +1119,8 @@ class con_regular():
         print(np.mean(self.precision_total))
         print("recall_ave_score")
         print(np.mean(self.recall_total))
+        print("auprc_ave_score")
+        print(np.mean(self.))
 
     def cal_auc(self):
         self.area = 0
@@ -1126,3 +1130,12 @@ class con_regular():
             x = self.fp_total[i + 1] - self.fp_total[i]
             y = (self.tp_total[i + 1] + self.tp_total[i]) / 2
             self.area += x * y
+
+    def cal_auprc(self):
+        self.area_auprc = 0
+        #self.precision_total.sort()
+        #self.recall_total.sort()
+        for i in range(len(self.precision_total)-1):
+            x = self.recall_total[i + 1] - self.recall_total[i]
+            y = (self.precision_total[i + 1] + self.precision_total[i]) / 2
+            self.area_auprc += x * y
