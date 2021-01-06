@@ -1069,6 +1069,8 @@ class con_regular():
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         self.orthog_input = self.sess.run(self.orthog_value)
+        self.orthog_input = np.expand_dims(self.orthog_input,0)
+        self.orthog_input = np.expand_dims(self.orthog_input,0)
         self.sess.close()
 
 
