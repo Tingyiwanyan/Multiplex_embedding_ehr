@@ -140,12 +140,12 @@ class con_regular():
         """
         Multi relation type for patients
         """
-        #self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
+        self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
         """
         Define orthogonal relation space
         """
         self.orthog_init = tf.keras.initializers.Orthogonal()
-        self.relation_patients = self.orthog_init(shape=self.shape_relation_patient)
+        #self.relation_patients = self.orthog_init(shape=self.shape_relation_patient)
         self.relation_weight = tf.keras.backend.placeholder([None,self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size])
         self.relation_weight_softmax = tf.nn.softmax(self.relation_weight)
 
