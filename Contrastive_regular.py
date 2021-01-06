@@ -1013,7 +1013,7 @@ class con_regular():
         """
 
 
-
+        """
         self.tp_test = 0
         self.fp_test = 0
         self.fn_test = 0
@@ -1028,6 +1028,7 @@ class con_regular():
         self.precision_test = np.float(self.tp_test) / (self.tp_test + self.fp_test)
         self.recall_test = np.float(self.tp_test) / (self.tp_test + self.fn_test)
         self.f1_test = 2 * (self.precision_test * self.recall_test) / (self.precision_test + self.recall_test)
+        """
 
         threshold = -1.01
         self.resolution = 0.01
@@ -1065,6 +1066,7 @@ class con_regular():
         self.f1_score_total = []
         self.acc_total = []
         self.area_total = []
+        self.auprc_total = []
         self.test_logit_total = []
         self.tp_score_total = []
         self.fp_score_total = []
@@ -1109,18 +1111,18 @@ class con_regular():
         self.fp_ave_score = np.sum(self.fp_score_total,0)/5
         self.precision_ave_score = np.sum(self.precision_curve_total,0)/5
         self.recall_ave_score = np.sum(self.recall_curve_total,0)/5
-        print("f1_ave_score")
-        print(np.mean(self.f1_score_total))
-        print("acc_ave_score")
-        print(np.mean(self.acc_total))
+        #print("f1_ave_score")
+        #print(np.mean(self.f1_score_total))
+        #print("acc_ave_score")
+        #print(np.mean(self.acc_total))
         print("area_ave_score")
         print(np.mean(self.area_total))
-        print("precision_ave_score")
-        print(np.mean(self.precision_total))
-        print("recall_ave_score")
-        print(np.mean(self.recall_total))
+        #print("precision_ave_score")
+        #print(np.mean(self.precision_total))
+        #print("recall_ave_score")
+        #print(np.mean(self.recall_total))
         print("auprc_ave_score")
-        print(np.mean(self.))
+        print(np.mean(self.auprc_total))
 
     def cal_auc(self):
         self.area = 0
