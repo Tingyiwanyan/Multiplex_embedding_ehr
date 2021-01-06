@@ -7,27 +7,28 @@ from itertools import groupby
 import pandas as pd
 
 
-class con_regular():
+class retain_gan():
     """
-    Create dynamic HGM model
+    create retain gan model
     """
 
-    def __init__(self, kg, data_process):
+    def __init__(self, kg, data_process, time_step_length):
         print("Im here in death")
         # tf.compat.v1.disable_v2_behavior()
         # tf.compat.v1.disable_eager_execution()
         self.kg = kg
         self.data_process = data_process
         # self.hetro_model = hetro_model
+        #self.train_data_whole = self.data_process.train_mortality_whole
+        #self.test_data_whole = self.data_process.train_validate_mortality_whole
+        #self.test_data_final = self.data_process.test_mortality
         self.train_data_whole = self.data_process.train_patient_whole
         self.test_data_whole = self.data_process.test_patient_whole
-        self.train_data = self.train_data_whole[0]
-        self.test_data = self.test_data_whole[0]
-        self.softmax_weight_threshold = 0.1
+        self.test_data_final = self.data_process.test_mortality
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
         self.batch_size = 16
-        self.time_sequence = 4
+        self.time_sequence = time_step_length
         self.time_step_length = 6
         self.predict_window_prior = self.time_sequence * self.time_step_length
         self.latent_dim_cell_state = 100
@@ -115,7 +116,6 @@ class con_regular():
         self.shape_relation = (self.latent_dim + self.latent_dim_demo,)
         self.init_mortality = tf.keras.initializers.he_normal(seed=None)
         self.init_lab = tf.keras.initializers.he_normal(seed=None)
-        self.shape_relation_patient = (self.item_size+self.lab_size,self.latent_dim+self.latent_dim_demo)
         """
         Define parameters
         """
@@ -136,19 +136,6 @@ class con_regular():
         """
         self.relation_mortality = tf.Variable(self.init_mortality(shape=self.shape_relation))
         self.relation_lab = tf.Variable(self.init_lab(shape=self.shape_relation))
-
-        """
-        Multi relation type for patients
-        """
-        #self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
-        """
-        Define orthogonal relation space
-        """
-        self.orthog_init = tf.keras.initializers.Orthogonal()
-        self.relation_patients = self.orthog_init(shape=self.shape_relation_patient)
-        self.relation_weight = tf.keras.backend.placeholder([None,self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size])
-        self.relation_weight_softmax = tf.nn.softmax(self.relation_weight)
-
 
         """
         Define attention mechanism
@@ -225,6 +212,39 @@ class con_regular():
         self.hidden_rep = tf.concat(hidden_rep, 1)
         self.check = concat_cur
 
+    def lstm_cell_retain(self):
+        cell_state = []
+        hidden_rep = []
+        self.project_input = tf.math.add(tf.matmul(self.input_x, self.weight_projection_w), self.bias_projection_b)
+        #self.project_input = tf.matmul(self.input_x, self.weight_projection_w)
+        for i in range(self.time_sequence):
+            x_input_cur = tf.gather(self.project_input, i, axis=1)
+            if i == 0:
+                concat_cur = tf.concat([self.init_hiddenstate, x_input_cur], 2)
+            else:
+                concat_cur = tf.concat([hidden_rep[i - 1], x_input_cur], 2)
+            forget_cur = \
+                tf.math.sigmoid(tf.math.add(tf.matmul(concat_cur, self.weight_forget_gate), self.bias_forget_gate))
+            info_cur = \
+                tf.math.sigmoid(tf.math.add(tf.matmul(concat_cur, self.weight_info_gate), self.bias_info_gate))
+            cellstate_cur = \
+                tf.math.tanh(tf.math.add(tf.matmul(concat_cur, self.weight_cell_state), self.bias_cell_state))
+            info_cell_state = tf.multiply(info_cur, cellstate_cur)
+            if not i == 0:
+                forget_cell_state = tf.multiply(forget_cur, cell_state[i - 1])
+                cellstate_cur = tf.math.add(forget_cell_state, info_cell_state)
+            output_gate = \
+                tf.nn.relu(tf.math.add(tf.matmul(concat_cur, self.weight_output_gate), self.bias_output_gate))
+            hidden_current = tf.multiply(output_gate, cellstate_cur)
+            cell_state.append(cellstate_cur)
+            hidden_rep.append(hidden_current)
+
+        self.hidden_last = hidden_rep[self.time_sequence - 1]
+        for i in range(self.time_sequence):
+            hidden_rep[i] = tf.expand_dims(hidden_rep[i], 1)
+        self.hidden_rep = tf.concat(hidden_rep, 1)
+        self.check = concat_cur
+
     def demo_layer(self):
         self.Dense_demo = tf.compat.v1.layers.dense(inputs=self.input_x_demo,
                                                     units=self.latent_dim_demo,
@@ -260,9 +280,9 @@ class con_regular():
         Build dynamic HGM model
         """
         #self.Dense_patient = tf.expand_dims(self.hidden_last,1)
-        #self.Dense_patient = tf.concat([self.hidden_last,self.Dense_demo],2)
+        self.Dense_patient = tf.concat([self.hidden_last,self.Dense_demo],2)
 
-
+        """
         self.hidden_att_e = tf.matmul(self.hidden_rep,self.weight_retain_w)
         self.hidden_att_e_softmax = tf.nn.softmax(self.hidden_att_e,1)
         self.hidden_att_e_broad = tf.broadcast_to(self.hidden_att_e_softmax,[tf.shape(self.input_x_vital)[0],
@@ -278,7 +298,7 @@ class con_regular():
         self.hidden_final = tf.reduce_sum(self.hidden_mul_variable, 1)
         self.Dense_patient = tf.concat([self.hidden_final, self.Dense_demo], 2)
         #self.Dense_patient = tf.concat([self.hidden_mul_variable, self.Dense_demo], 2)
-
+        """
 
 
         #self.Dense_patient = self.hidden_last_comb
@@ -294,6 +314,156 @@ class con_regular():
             tf.nn.relu(tf.math.add(tf.matmul(self.Death_input, self.weight_mortality), self.bias_mortality))
 
         self.Dense_death_rep = tf.math.subtract(self.Dense_death_rep_, self.relation_mortality)
+
+        """
+        Get interpretation matrix
+        """
+        """
+        self.braod_weight_variable = tf.broadcast_to(self.weight_projection_w,[tf.shape(self.input_x_vital)[0],
+                                                                               self.time_sequence,
+                                                                               1+self.positive_lab_size+self.negative_lab_size,
+                                                                               self.latent_dim,self.latent_dim])
+
+        self.exp_hidden_att_e_variable = tf.expand_dims(self.hidden_att_e_variable,axis=3)
+        self.broad_hidden_att_e_variable = tf.broadcast_to(self.exp_hidden_att_e_variable,[tf.shape(self.input_x_vital)[0],
+                                                                               self.time_sequence,
+                                                                               1+self.positive_lab_size+self.negative_lab_size,
+                                                                               self.latent_dim,self.latent_dim])
+
+        self.exp_hidden_att_e_broad = tf.expand_dims(self.hidden_att_e_broad,axis=3)
+        self.broad_hidden_att_e = tf.broadcast_to(self.exp_hidden_att_e_broad,[tf.shape(self.input_x_vital)[0],
+                                                                               self.time_sequence,
+                                                                               1+self.positive_lab_size+self.negative_lab_size,
+                                                                               self.latent_dim,self.latent_dim])
+        self.project_weight_variable = tf.multiply(self.broad_hidden_att_e_variable, self.braod_weight_variable)
+        self.project_weight_variable_final = tf.multiply(self.broad_hidden_att_e,self.project_weight_variable)
+        """
+        """
+        Get score important
+        """
+        """
+        self.time_feature_index = tf.constant([i for i in range(self.lab_size+self.item_size)])
+        self.mortality_hidden_rep = tf.gather(self.Dense_death_rep, self.time_feature_index, axis=1)
+        self.score_attention_ = tf.matmul(self.project_weight_variable_final,tf.expand_dims(tf.squeeze(self.mortality_hidden_rep),1))
+        self.score_attention = tf.squeeze(self.score_attention_,[4])
+        self.input_importance = tf.multiply(self.score_attention,self.input_x)
+        """
+
+
+        """
+        self.Dense_lab_ = \
+            tf.nn.relu(tf.math.add(tf.matmul(self.lab_test,self.weight_lab),self.bias_lab))
+        self.Dense_lab = tf.math.add(self.Dense_lab_,self.relation_lab)
+        """
+
+
+
+    def build_dhgm_model_retain(self):
+        self.hidden_att_e = tf.matmul(self.hidden_rep, self.weight_retain_w)
+        self.hidden_att_e_softmax = tf.nn.softmax(self.hidden_att_e, 1)
+        self.hidden_att_e_broad = tf.broadcast_to(self.hidden_att_e_softmax, [tf.shape(self.input_x_vital)[0],
+                                                                              self.time_sequence,
+                                                                              1 + self.positive_lab_size + self.negative_lab_size,
+                                                                              self.latent_dim])
+
+        self.hidden_att_e_variable = tf.math.sigmoid(
+            tf.math.add(tf.matmul(self.hidden_rep, self.weight_retain_variable_w), self.bias_retain_variable_b))
+        # self.hidden_att_e_softmax = tf.nn.softmax(self.hidden_att_e, -1)
+        self.parameter_mul = tf.multiply(self.hidden_att_e_broad, self.hidden_att_e_variable)
+        self.hidden_mul_variable = tf.multiply(self.parameter_mul, self.project_input)
+        # self.hidden_final = tf.reduce_sum(self.hidden_mul, 1)
+        self.hidden_final = tf.reduce_sum(self.hidden_mul_variable, 1)
+        self.Dense_patient = tf.concat([self.hidden_final, self.Dense_demo], 2)
+        # self.Dense_patient = tf.concat([self.hidden_mul_variable, self.Dense_demo], 2)
+
+        self.Dense_mortality_ = \
+            tf.nn.relu(tf.math.add(tf.matmul(self.mortality, self.weight_mortality), self.bias_mortality))
+
+        self.Dense_mortality = tf.math.subtract(self.Dense_mortality_, self.relation_mortality)
+
+        self.Dense_death_rep_ = \
+            tf.nn.relu(tf.math.add(tf.matmul(self.Death_input, self.weight_mortality), self.bias_mortality))
+
+        self.Dense_death_rep = tf.math.subtract(self.Dense_death_rep_, self.relation_mortality)
+
+        """
+        Get interpretation matrix
+        """
+
+        self.braod_weight_variable = tf.broadcast_to(self.weight_projection_w,[tf.shape(self.input_x_vital)[0],
+                                                                               self.time_sequence,
+                                                                               1+self.positive_lab_size+self.negative_lab_size,
+                                                                               self.latent_dim,self.latent_dim])
+
+        self.exp_hidden_att_e_variable = tf.expand_dims(self.hidden_att_e_variable,axis=3)
+        self.broad_hidden_att_e_variable = tf.broadcast_to(self.exp_hidden_att_e_variable,[tf.shape(self.input_x_vital)[0],
+                                                                               self.time_sequence,
+                                                                               1+self.positive_lab_size+self.negative_lab_size,
+                                                                               self.latent_dim,self.latent_dim])
+
+        self.exp_hidden_att_e_broad = tf.expand_dims(self.hidden_att_e_broad,axis=3)
+        self.broad_hidden_att_e = tf.broadcast_to(self.exp_hidden_att_e_broad,[tf.shape(self.input_x_vital)[0],
+                                                                               self.time_sequence,
+                                                                               1+self.positive_lab_size+self.negative_lab_size,
+                                                                               self.latent_dim,self.latent_dim])
+        self.project_weight_variable = tf.multiply(self.broad_hidden_att_e_variable, self.braod_weight_variable)
+        self.project_weight_variable_final = tf.multiply(self.broad_hidden_att_e,self.project_weight_variable)
+
+        """
+        Get score important
+        """
+
+        self.time_feature_index = tf.constant([i for i in range(self.lab_size+self.item_size)])
+        self.mortality_hidden_rep = tf.gather(self.Dense_death_rep, self.time_feature_index, axis=1)
+        self.score_attention_ = tf.matmul(self.project_weight_variable_final,tf.expand_dims(tf.squeeze(self.mortality_hidden_rep),1))
+        self.score_attention = tf.squeeze(self.score_attention_,[4])
+        self.input_importance = tf.multiply(self.score_attention,self.input_x)
+
+
+        """
+        self.Dense_lab_ = \
+            tf.nn.relu(tf.math.add(tf.matmul(self.lab_test,self.weight_lab),self.bias_lab))
+        self.Dense_lab = tf.math.add(self.Dense_lab_,self.relation_lab)
+        """
+
+
+    def build_att_mortality(self):
+        """
+        build attention model for mortality node
+        """
+        self.att_skip_latent = tf.matmul(self.x_att_skip, self.weight_att_W)
+        self.x_skip_center_brod = tf.broadcast_to(self.x_skip_mor, [self.batch_size, self.neighbor_pick_skip,
+                                                                    self.latent_dim_att + self.latent_dim_demo])
+        self.att_skip_center = tf.matmul(self.x_skip_center_brod, self.weight_att_W)
+        self.concat_att_skip = tf.concat([self.att_skip_center, self.att_skip_latent], axis=2)
+
+        self.att_neg_latent = tf.matmul(self.x_att_neg, self.weight_att_W)
+        self.x_neg_center_brod = tf.broadcast_to(self.x_negative_mor, [self.batch_size, self.neighbor_pick_neg,
+                                                                       self.latent_dim_att + self.latent_dim_demo])
+        self.att_neg_center = tf.matmul(self.x_neg_center_brod, self.weight_att_W)
+        self.concat_att_neg = tf.concat([self.att_neg_center, self.att_neg_latent], axis=2)
+
+        """
+        times the weight vector a
+        """
+        self.weight_att_skip_a = tf.matmul(self.concat_att_skip, self.weight_vec_a)
+        self.weight_att_neg_a = tf.matmul(self.concat_att_neg, self.weight_vec_a)
+
+        self.soft_max_att_skip = tf.broadcast_to(tf.nn.softmax(self.weight_att_skip_a, axis=1),
+                                                 [self.batch_size, self.neighbor_pick_skip,
+                                                  self.latent_dim_att + self.latent_dim_demo])
+        self.soft_max_att_neg = tf.broadcast_to(tf.nn.softmax(self.weight_att_neg_a, axis=1),
+                                                [self.batch_size, self.neighbor_pick_neg,
+                                                 self.latent_dim_att + self.latent_dim_demo])
+
+        self.att_rep_skip_mor = tf.multiply(self.soft_max_att_skip, self.att_skip_latent)
+        self.att_rep_neg_mor = tf.multiply(self.soft_max_att_neg, self.att_neg_latent)
+
+        self.att_rep_skip_mor_sum = tf.reduce_sum(self.att_rep_skip_mor, 1)
+        self.att_rep_neg_mor_sum = tf.reduce_sum(self.att_rep_neg_mor, 1)
+
+        self.att_rep_skip_mor_final = tf.nn.relu(self.att_rep_skip_mor_sum)
+        self.att_rep_neg_mor_final = tf.nn.relu(self.att_rep_neg_mor_sum)
 
     def get_latent_rep_hetero(self):
         """
@@ -321,73 +491,15 @@ class con_regular():
         patient_idx_negative = tf.constant([i + self.positive_lab_size + 1 for i in range(self.negative_lab_size)])
         self.x_negative_patient = tf.gather(self.Dense_patient, patient_idx_negative, axis=1)
 
-
-
         # self.process_patient_att()
 
         #self.x_skip = tf.concat([self.x_skip_mor, self.x_skip_patient], axis=1)
         #self.x_negative = tf.concat([self.x_negative_mor, self.x_negative_patient], axis=1)
         self.x_skip = self.x_skip_mor
         self.x_negative = self.x_negative_mor
-        self.x_skip_contrast_ = self.x_skip_patient
-        self.x_negative_contrast_ = self.x_negative_patient
+        self.x_skip_contrast = self.x_skip_patient
+        self.x_negative_contrast = self.x_negative_patient
 
-        self.x_skip_contrast_ = tf.expand_dims(self.x_skip_contrast_,axis=2)
-        self.x_negative_contrast_ = tf.expand_dims(self.x_negative_contrast_,axis=2)
-
-        self.x_skip_contrast = tf.broadcast_to(self.x_skip_contrast_, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
-                                        self.latent_dim + self.latent_dim_demo])
-
-        self.x_negative_contrast = tf.broadcast_to(self.x_negative_contrast_,
-                        [self.batch_size, self.negative_sample_size,self.item_size + self.lab_size,
-                         self.latent_dim + self.latent_dim_demo])
-
-        self.relation_patients = tf.expand_dims(self.relation_patients,axis=0)
-        self.relation_patients = tf.expand_dims(self.relation_patients,axis=0)
-        self.relation_patients_broad_pos = tf.broadcast_to(self.relation_patients, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
-                                        self.latent_dim + self.latent_dim_demo])
-
-
-
-        self.relation_patients_broad_neg = tf.broadcast_to(self.relation_patients,[self.batch_size, self.negative_sample_size,self.item_size + self.lab_size,
-                         self.latent_dim + self.latent_dim_demo])
-
-        self.relation_patients_broad_origin = tf.broadcast_to(self.relation_patients,[self.batch_size,1,self.item_size+self.lab_size,
-                                                                                      self.latent_dim+self.latent_dim_demo])
-
-        """
-        extract softmax weights
-        """
-        softmax_weight_idx_skip = tf.constant([i for i in range(self.positive_lab_size)])
-        self.softmax_skip_patient = tf.gather(self.relation_weight_softmax, softmax_weight_idx_skip, axis=1)
-        softmax_weight_idx_negative = tf.constant([i + self.positive_lab_size for i in range(self.negative_lab_size)])
-        self.softmax_negative_patient = tf.gather(self.relation_weight_softmax, softmax_weight_idx_negative, axis=1)
-
-        self.softmax_skip_patient = tf.expand_dims(self.softmax_skip_patient,axis=3)
-        self.softmax_negative_patient = tf.expand_dims(self.softmax_negative_patient,axis=3)
-
-        self.softmax_weight_pos_broad = tf.broadcast_to(self.softmax_skip_patient, [self.batch_size, self.positive_sample_size ,self.item_size + self.lab_size,
-                                        self.latent_dim + self.latent_dim_demo])
-
-        self.softmax_weight_neg_broad = tf.broadcast_to(self.softmax_negative_patient,
-                                                           [self.batch_size, self.negative_sample_size,
-                                                            self.item_size + self.lab_size,
-                                                            self.latent_dim + self.latent_dim_demo])
-
-        self.relation_patients_pos_add = tf.math.add(self.x_skip_contrast,self.relation_patients_broad_pos)
-        self.relation_patients_neg_add = tf.math.add(self.x_negative_contrast,self.relation_patients_broad_neg)
-
-        self.relation_patients_pos_add_weight = tf.math.multiply(self.relation_patients_pos_add,self.softmax_weight_pos_broad)
-        self.relation_patients_neg_add_weight = tf.math.multiply(self.relation_patients_neg_add,self.softmax_weight_neg_broad)
-
-        """
-        project x_origin into relation translation space
-        """
-        self.x_origin_ = tf.expand_dims(self.x_origin,axis=2)
-        self.x_origin_contrast_ = tf.broadcast_to(self.x_origin_, [self.batch_size, 1, self.item_size + self.lab_size,
-                                        self.latent_dim + self.latent_dim_demo])
-
-        self.x_origin_contrast = tf.math.add(self.x_origin_contrast_,self.relation_patients_broad_origin)
 
     def get_positive_patient(self, center_node_index):
         self.patient_pos_sample_vital = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.item_size))
@@ -555,12 +667,12 @@ class con_regular():
 
     def SGNN_loss_contrast(self):
         """
-        mplement sgnn loss contrast
+        iplement sgnn loss contrast
         """
         negative_training_norm = tf.math.l2_normalize(self.x_negative_contrast, axis=2)
 
-        skip_training = tf.broadcast_to(self.x_origin_contrast,
-                                        [self.batch_size, self.negative_sample_size,self.lab_size+self.item_size,
+        skip_training = tf.broadcast_to(self.x_origin,
+                                        [self.batch_size, self.negative_sample_size,
                                          self.latent_dim + self.latent_dim_demo])
 
         skip_training_norm = tf.math.l2_normalize(skip_training, axis=2)
@@ -571,7 +683,7 @@ class con_regular():
 
         sum_log_dot_prod = tf.math.log(tf.math.sigmoid(tf.math.negative(tf.reduce_mean(dot_prod_sum, 1))))
 
-        positive_training = tf.broadcast_to(self.x_origin_contrast, [self.batch_size, self.positive_sample_size,self.lab_size+self.item_size,
+        positive_training = tf.broadcast_to(self.x_origin, [self.batch_size, self.positive_sample_size,
                                                             self.latent_dim + self.latent_dim_demo])
 
         positive_skip_norm = tf.math.l2_normalize(self.x_skip_contrast, axis=2)
@@ -587,58 +699,62 @@ class con_regular():
         self.negative_sum_contrast = tf.math.negative(
             tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
 
-
-    def SGNN_loss_contrast_multi(self):
-        """
-        mplement sgnn loss contrast
-        """
-        negative_training_norm = tf.math.l2_normalize(self.x_negative_contrast, axis=2)
-
-        skip_training = tf.broadcast_to(self.x_origin_contrast,
-                                        [self.batch_size, self.negative_sample_size,self.item_size+self.lab_size,
-                                         self.latent_dim + self.latent_dim_demo])
-
-        skip_training_norm = tf.math.l2_normalize(skip_training, axis=2)
-
-        dot_prod = tf.multiply(skip_training_norm, negative_training_norm)
-
-        dot_prod_sum = tf.reduce_sum(dot_prod, 2)
-
-        sum_log_dot_prod = tf.math.log(tf.math.sigmoid(tf.math.negative(tf.reduce_mean(dot_prod_sum, 1))))
-
-        positive_training = tf.broadcast_to(self.x_origin_contrast, [self.batch_size, self.positive_sample_size,self.item_size+self.lab_size,
-                                                            self.latent_dim + self.latent_dim_demo])
-
-        positive_skip_norm = tf.math.l2_normalize(self.x_skip_contrast, axis=2)
-
-        positive_training_norm = tf.math.l2_normalize(positive_training, axis=2)
-
-        dot_prod_positive = tf.multiply(positive_skip_norm, positive_training_norm)
-
-        dot_prod_sum_positive = tf.reduce_sum(dot_prod_positive, 2)
-
-        sum_log_dot_prod_positive = tf.math.log(tf.math.sigmoid(tf.reduce_mean(dot_prod_sum_positive, 1)))
-
-        self.negative_sum_contrast = tf.math.negative(
-            tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
-
-    def config_model(self):
+    def config_model_ce_rnn(self):
         self.lstm_cell()
         self.demo_layer()
         # self.softmax_loss()
         self.build_dhgm_model()
         self.get_latent_rep_hetero()
-
         self.SGNN_loss()
         self.SGNN_loss_contrast()
-        #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
-        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
+        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
+        #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
          #self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
 
+    def config_moldel_ce_retain(self):
+        self.lstm_cell_retain()
+        self.demo_layer()
+        # self.softmax_loss()
+        self.build_dhgm_model_retain()
+        self.get_latent_rep_hetero()
+        self.SGNN_loss()
+        self.SGNN_loss_contrast()
+        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
+        self.sess = tf.InteractiveSession()
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
 
+    def config_model_cl_rnn(self):
+        self.lstm_cell()
+        self.demo_layer()
+        # self.softmax_loss()
+        self.build_dhgm_model()
+        self.get_latent_rep_hetero()
+        self.SGNN_loss()
+        self.SGNN_loss_contrast()
+        #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
+        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
+
+        self.sess = tf.InteractiveSession()
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
+
+    def config_model_cl_retain(self):
+        self.lstm_cell_retain()
+        self.demo_layer()
+        # self.softmax_loss()
+        self.build_dhgm_model_retain()
+        self.get_latent_rep_hetero()
+        self.SGNN_loss()
+        self.SGNN_loss_contrast()
+        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
+
+        self.sess = tf.InteractiveSession()
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
 
     def assign_value_patient(self, patientid, start_time, end_time):
         self.one_sample = np.zeros(self.item_size)
@@ -758,75 +874,6 @@ class con_regular():
 
         return one_sample
 
-    def compute_time_seq_single(self,central_node_variable):
-        """
-        compute single node feature values
-        """
-        time_seq_variable = np.zeros((self.item_size + self.lab_size, self.time_sequence))
-        if self.kg.dic_patient[central_node_variable]['death_flag'] == 0:
-            flag = 0
-            # neighbor_patient = self.kg.dic_death[0]
-        else:
-            flag = 1
-            # neighbor_patient = self.kg.dic_death[1]
-        time_seq = self.kg.dic_patient[central_node_variable]['prior_time_vital'].keys()
-        time_seq_int = [np.int(k) for k in time_seq]
-        time_seq_int.sort()
-        # time_index = 0
-        # for j in self.time_seq_int:
-        for j in range(self.time_sequence):
-            # if time_index == self.time_sequence:
-            #    break
-            if flag == 0:
-                pick_death_hour = self.kg.dic_patient[central_node_variable][
-                    'pick_time']  # self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
-                start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
-                end_time = start_time + self.time_step_length
-            else:
-                start_time = self.kg.dic_patient[central_node_variable][
-                                 'death_hour'] - self.predict_window_prior + float(
-                    j) * self.time_step_length
-                end_time = start_time + self.time_step_length
-            one_data_vital = self.assign_value_patient(central_node_variable, start_time, end_time)
-            one_data_lab = self.assign_value_lab(central_node_variable, start_time, end_time)
-            # one_data_icu_label = self.assign_value_icu_intubation(center_node_index, start_time, end_time)
-            # one_data_demo = self.assign_value_demo(center_node_index)
-            # self.patient_pos_sample_vital[j, 0, :] = one_data_vital
-            # self.patient_pos_sample_lab[j, 0, :] = one_data_lab
-            one_data = np.concatenate([one_data_vital, one_data_lab])
-            time_seq_variable[:,j] = one_data
-
-        return time_seq_variable
-
-    def compute_relation_indicator(self,central_node,context_node):
-        softmax_weight = np.zeros((self.item_size+self.lab_size))
-        #features = list(self.kg.dic_vital.keys())+list(self.kg.dic_lab.keys())
-        center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
-        context_data = np.mean(self.compute_time_seq_single(context_node),axis=1)
-        difference = np.abs(center_data-context_data)
-        for i in range(self.item_size+self.lab_size):
-            if difference[i] < self.softmax_weight_threshold:
-                softmax_weight[i] = 1
-
-        return softmax_weight
-
-    def compute_soft_weight(self):
-        soft_weight = np.zeros((self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
-        self.variable_pos = np.mean(np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2),axis=0)
-        self.variable_neg = np.mean(np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2),axis=0)
-        self.variable_compare = np.concatenate((self.variable_pos,self.variable_neg),axis=0)
-        self.variable_origin = self.variable_pos[0,:]
-        for i in range(self.positive_lab_size+self.negative_lab_size):
-            pos_compare = self.variable_compare[1+i,:]
-            compare = np.abs(self.variable_origin-pos_compare)
-            for j in range(self.item_size+self.lab_size):
-                if compare[j] < self.softmax_weight_threshold:
-                    soft_weight[i,j] = 1
-
-        return soft_weight
-
-
-
     def get_batch_train(self, data_length, start_index, data):
         """
         get training batch data
@@ -840,8 +887,6 @@ class con_regular():
             (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.demo_size))
         train_one_batch_com = np.zeros(
             (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.com_size))
-        train_one_batch_soft_weight = np.zeros(
-        (data_length,self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
         # train_one_batch_item = np.zeros((data_length,self.positive_lab_size+self.negative_lab_size,self.item_size))
         train_one_batch_mortality = np.zeros((data_length, 2, 2))
         one_batch_logit = np.zeros((data_length, 2))
@@ -883,7 +928,6 @@ class con_regular():
 
             self.get_positive_patient(self.patient_id)
             self.get_negative_patient(self.patient_id)
-            self.train_one_data_soft_weight = self.compute_soft_weight()
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -895,9 +939,8 @@ class con_regular():
             train_one_batch_demo[i, :, :] = train_one_data_demo
             train_one_batch_com[i, :, :] = train_one_data_com
             train_one_batch_icu_intubation[i,:,:,:] = train_one_data_icu_intubation
-            train_one_batch_soft_weight[i,:,:] = self.train_one_data_soft_weight
 
-        return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation,train_one_batch_soft_weight
+        return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation
 
 
     def train(self):
@@ -913,7 +956,7 @@ class con_regular():
             print('epoch')
             print(j)
             for i in range(iteration):
-                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation,self.one_batch_soft_weight = self.get_batch_train(
+                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
                     self.batch_size, i * self.batch_size, self.train_data)
 
                 self.err_ = self.sess.run([self.negative_sum, self.train_step_neg],
@@ -924,9 +967,8 @@ class con_regular():
                                                      # self.lab_test: self.one_batch_item,
                                                      self.mortality: self.one_batch_mortality,
                                                      self.init_hiddenstate: init_hidden_state,
-                                                     self.input_icu_intubation:self.one_batch_icu_intubation,
-                                                     self.relation_weight:self.one_batch_soft_weight})
-                print(self.err_[0])
+                                                     self.input_icu_intubation:self.one_batch_icu_intubation})
+                #print(self.err_[0])
 
                 """
                 self.err_lstm = self.sess.run([self.cross_entropy, self.train_step_cross_entropy,self.init_hiddenstate,self.output_layer,self.logit_sig],
@@ -942,7 +984,7 @@ class con_regular():
         test_length = len(data)
         init_hidden_state = np.zeros(
             (test_length, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
-        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com,self.one_batch_icu_intubation,self.one_batch_soft_weight = self.get_batch_train(
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com,self.one_batch_icu_intubation = self.get_batch_train(
             test_length, 0, data)
         self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.test_data_batch_vital,
                                                                          self.input_x_lab: self.test_one_batch_lab,
@@ -1061,10 +1103,137 @@ class con_regular():
             self.recall_total.append(recall_test)
             threshold += self.resolution
 
-    def cross_validation(self):
+
+    def test_retain(self, data):
+        Death = np.zeros([1,2])
+        Death[0][1] = 1
+        test_length = len(data)
+        init_hidden_state = np.zeros(
+            (test_length, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com,self.one_batch_icu_intubation = self.get_batch_train(
+            test_length, 0, data)
+        self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.test_data_batch_vital,
+                                                                         self.input_x_lab: self.test_one_batch_lab,
+                                                                         self.input_x_demo: self.test_one_batch_demo,
+                                                                         # self.input_x_com: self.test_com,
+                                                                         self.init_hiddenstate: init_hidden_state,
+                                                                         self.input_icu_intubation:self.one_batch_icu_intubation})[:,
+                            0, :]
+
+        self.test_att_score = self.sess.run([self.score_attention,self.input_importance,self.input_x],feed_dict={self.input_x_vital: self.test_data_batch_vital,
+                                                                         self.input_x_lab: self.test_one_batch_lab,
+                                                                         self.input_x_demo: self.test_one_batch_demo,
+                                                                         self.init_hiddenstate: init_hidden_state,
+                                                                         self.Death_input: Death,
+                                                                         self.input_icu_intubation:self.one_batch_icu_intubation})
+
+
+
+        single_mortality = np.zeros((1, 2, 2))
+        single_mortality[0][0][0] = 1
+        single_mortality[0][1][1] = 1
+        self.mortality_test = self.sess.run(self.Dense_mortality, feed_dict={self.mortality: single_mortality})[0]
+        self.score = np.zeros(test_length)
+        for i in range(test_length):
+            embed_single_patient = self.test_patient[i] / np.linalg.norm(self.test_patient[i])
+            embed_mortality = self.mortality_test[1] / np.linalg.norm(self.mortality_test[1])
+            self.score[i] = np.matmul(embed_single_patient, embed_mortality.T)
+
+        self.correct = 0
+        self.tp_correct = 0
+        self.tp_neg = 0
+        self.correct_predict_death = []
+        for i in range(test_length):
+            if self.test_logit[i, 1] == 1:
+                self.tp_correct += 1
+            if self.test_logit[i, 0] == 1:
+                self.tp_neg += 1
+            if self.score[i] < 0 and self.test_logit[i, 0] == 1:
+                self.correct += 1
+            if self.score[i] > 0 and self.test_logit[i, 1] == 1:
+                self.correct_predict_death.append(i)
+                self.correct += 1
+
+        self.acc = np.float(self.correct) / test_length
+
+        self.correct_predict_death = np.array(self.correct_predict_death)
+
+        feature_len = self.item_size + self.lab_size
+
+
+        self.test_data_scores = self.test_att_score[1][self.correct_predict_death,:,0,:]
+        self.ave_data_scores = np.zeros((self.time_sequence,feature_len))
+
+        count = 0
+        value = 0
+
+        for j in range(self.time_sequence):
+            for p in range(feature_len):
+                for i in range(self.correct_predict_death.shape[0]):
+                    if self.test_data_scores[i,j,p]!=0:
+                        count += 1
+                        value += self.test_data_scores[i,j,p]
+                if count == 0:
+                    continue
+                self.ave_data_scores[j,p] = float(value/count)
+                count = 0
+                value = 0
+
+
+
+
+        self.tp_test = 0
+        self.fp_test = 0
+        self.fn_test = 0
+        for i in range(test_length):
+            if self.score[i] > 0 and self.test_logit[i, 1] == 1:
+                self.tp_test += 1
+            if self.score[i] < 0 and self.test_logit[i, 1] == 1:
+                self.fn_test += 1
+            if self.score[i] > 0 and self.test_logit[i, 0] == 1:
+                self.fp_test += 1
+
+        self.precision_test = np.float(self.tp_test) / (self.tp_test + self.fp_test)
+        self.recall_test = np.float(self.tp_test) / (self.tp_test + self.fn_test)
+        self.f1_test = 2 * (self.precision_test * self.recall_test) / (self.precision_test + self.recall_test)
+
+        threshold = -1.01
+        self.resolution = 0.01
+        self.tp_total = []
+        self.fp_total = []
+        self.precision_total = []
+        self.recall_total = []
+
+        while (threshold < 1.01):
+            tp_test = 0
+            fp_test = 0
+            fn_test = 0
+            for i in range(test_length):
+                if self.test_logit[i, 1] == 1 and self.score[i] > threshold:
+                    tp_test += 1
+                if self.test_logit[i, 0] == 1 and self.score[i] > threshold:
+                    fp_test += 1
+                if self.score[i] < threshold and self.test_logit[i, 1] == 1:
+                    fn_test += 1
+
+            tp_rate = tp_test / self.tp_correct
+            fp_rate = fp_test / self.tp_neg
+            if (tp_test+fp_test) == 0:
+                precision_test = 1.0
+            else:
+                precision_test = np.float(tp_test) / (tp_test + fp_test)
+            recall_test = np.float(tp_test) / (tp_test + fn_test)
+            self.tp_total.append(tp_rate)
+            self.fp_total.append(fp_rate)
+            self.precision_total.append(precision_test)
+            self.recall_total.append(recall_test)
+            threshold += self.resolution
+
+    def cross_validation(self, name_of_model):
         self.f1_score_total = []
         self.acc_total = []
         self.area_total = []
+        self.auprc_total = []
         self.test_logit_total = []
         self.tp_score_total = []
         self.fp_score_total = []
@@ -1074,49 +1243,96 @@ class con_regular():
         self.recall_curve_total = []
         self.test_patient_whole = []
         feature_len = self.item_size + self.lab_size
-        #self.ave_data_scores_total = np.zeros((self.time_sequence, feature_len))
+        self.ave_data_scores_total = np.zeros((self.time_sequence, feature_len))
 
-        self.config_model()
+
         for i in range(5):
-            self.sess = tf.InteractiveSession()
-            tf.global_variables_initializer().run()
-            tf.local_variables_initializer().run()
+            if name_of_model == "ce_rnn":
+                self.config_model_ce_rnn()
+            if name_of_model == "cl_rnn":
+                self.config_model_cl_rnn()
+            if name_of_model == "ce_retain":
+                self.config_moldel_ce_retain()
+            if name_of_model == "cl_retain":
+                self.config_model_cl_retain()
             self.train_data = self.train_data_whole[i]
             self.test_data = self.test_data_whole[i]
             self.train()
-            self.test(self.test_data)
+            if name_of_model == "ce_rnn" or name_of_model == "cl_rnn":
+                self.test(self.test_data)
+            else:
+                self.test_retain(self.test_data)
             self.f1_score_total.append(self.f1_test)
             self.acc_total.append(self.acc)
             self.tp_score_total.append(self.tp_total)
             self.fp_score_total.append(self.fp_total)
             self.cal_auc()
+            self.cal_auprc()
             self.area_total.append(self.area)
+            self.auprc_total.append(self.area_auprc)
             self.precision_score_total.append(self.precision_test)
             self.recall_score_total.append(self.recall_test)
             self.precision_curve_total.append(self.precision_total)
             self.recall_curve_total.append(self.recall_total)
             self.test_patient_whole.append(self.test_patient)
             self.test_logit_total.append(self.test_logit)
-            #self.ave_data_scores_total += self.ave_data_scores
+            if name_of_model == "ce_retain" or name_of_model == "cl_retain":
+                self.ave_data_scores_total += self.ave_data_scores
             self.sess.close()
-
-        #self.ave_data_scores_total = self.ave_data_scores_total/5
-        #self.norm = np.linalg.norm(self.ave_data_scores_total)
-        #self.ave_data_scores_total = self.ave_data_scores_total/self.norm
+        if name_of_model == "ce_retain" or name_of_model == "cl_retain":
+            self.ave_data_scores_total = self.ave_data_scores_total/5
+            self.norm = np.linalg.norm(self.ave_data_scores_total)
+            self.ave_data_scores_total = self.ave_data_scores_total/self.norm
         self.tp_ave_score = np.sum(self.tp_score_total,0)/5
         self.fp_ave_score = np.sum(self.fp_score_total,0)/5
         self.precision_ave_score = np.sum(self.precision_curve_total,0)/5
         self.recall_ave_score = np.sum(self.recall_curve_total,0)/5
+        self.std_tp = np.std(np.array(self.tp_score_total),axis=0)
+        self.std_fp = np.std(np.array(self.fp_score_total),axis=0)
+        self.std_precision = np.std(np.array(self.precision_curve_total),axis=0)
+        self.std_recall = np.std(np.array(self.recall_curve_total),axis=0)
+        self.std_f1 = np.std(self.f1_score_total)
+        self.std_acc = np.std(self.acc_total)
+        self.std_auc = np.std(self.area_total)
         print("f1_ave_score")
         print(np.mean(self.f1_score_total))
+        print("f1_std")
+        print(self.std_f1)
         print("acc_ave_score")
         print(np.mean(self.acc_total))
-        print("area_ave_score")
+        print("acc_std")
+        print(self.std_acc)
+        print("auroc_ave_score")
         print(np.mean(self.area_total))
-        print("precision_ave_score")
-        print(np.mean(self.precision_total))
-        print("recall_ave_score")
-        print(np.mean(self.recall_total))
+        print("auroc_std_score")
+        print(self.std_auc)
+        print("auprc_ave_score")
+        print(np.mean(self.auprc_total))
+        print("auprc_std_score")
+        print(np.std(self.auprc_total))
+
+
+
+    def gen_heap_map_csv(self,name_to_store):
+        pick_num = [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 12, 13, 14, 15, 16, 19,
+       20, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 36, 37, 38, 41, 43,
+       45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 64, 66,
+       67, 69, 70, 72, 73, 74, 75, 76, 78, 79, 80, 83]
+        pick_num = np.array(pick_num)
+        feature = list(np.array(list(self.kg.dic_vital.keys())+list(self.kg.dic_lab.keys()))[pick_num])
+        feature_csv = feature+feature+feature+feature
+        time_seq = list(np.ones(63))+list(2*np.ones(63))+list(3*np.ones(63))+list(4*np.ones(63))
+        time_step1 = self.ave_data_scores_total[0,:][pick_num]
+        time_step2 = self.ave_data_scores_total[1,:][pick_num]
+        time_step3 = self.ave_data_scores_total[2,:][pick_num]
+        time_step4 = self.ave_data_scores_total[3,:][pick_num]
+        variable_scores = list(time_step1)+list(time_step2)+list(time_step3)+list(time_step4)
+        df = pd.DataFrame({"Variable Names":feature_csv, "Time Step":time_seq, "Contribution Scores":variable_scores})
+        df.to_csv(name_to_store,index=False)
+
+
+
+
 
     def cal_auc(self):
         self.area = 0
@@ -1126,3 +1342,30 @@ class con_regular():
             x = self.fp_total[i + 1] - self.fp_total[i]
             y = (self.tp_total[i + 1] + self.tp_total[i]) / 2
             self.area += x * y
+
+    def cal_auprc(self):
+        self.area_auprc = 0
+        #self.precision_total.sort()
+        #self.recall_total.sort()
+        for i in range(len(self.precision_total)-1):
+            x = self.recall_total[i + 1] - self.recall_total[i]
+            y = (self.precision_total[i + 1] + self.precision_total[i]) / 2
+            self.area_auprc += x * y
+
+
+    def test_lstm(self):
+        """
+        test the system, return the accuracy of the model
+        """
+        init_hidden_state = np.zeros((self.length_test, self.latent_dim))
+        self.test_data, self.test_logit, self.train_one_batch_item = self.get_batch_train(self.length_test, 0,self.test_data)
+        self.logit_out = self.sess.run(self.logit_sig, feed_dict={self.input_x: self.test_data,
+                                                                  self.init_hiddenstate: init_hidden_state})
+        self.correct = 0
+        for i in range(self.length_test):
+            if self.test_logit[i, 1] == 1 and self.logit_out[i, 1] > self.threshold:
+                self.correct += 1
+            if self.test_logit[i, 1] == 0 and self.logit_out[i, 1] < self.threshold:
+                self.correct += 1
+
+        self.acc = np.float(self.correct) / self.length_test
