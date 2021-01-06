@@ -140,11 +140,11 @@ class con_regular():
         """
         Multi relation type for patients
         """
-        self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
+        #self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
+        self.relation_patients = tf.keras.backend.placeholder([self.item_size+self.lab_size,self.latent_dim+self.latent_dim_demo])
         """
         Define orthogonal relation space
         """
-        self.orthog_init = tf.keras.initializers.Orthogonal()
         #self.relation_patients = self.orthog_init(shape=self.shape_relation_patient)
         self.relation_weight = tf.keras.backend.placeholder([None,self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size])
         self.relation_weight_softmax = tf.nn.softmax(self.relation_weight)
@@ -920,6 +920,7 @@ class con_regular():
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
+                                                     self.relation_patients: self.orthog_input
                                                      # self.input_x_com: self.one_batch_com,
                                                      # self.lab_test: self.one_batch_item,
                                                      self.mortality: self.one_batch_mortality,
@@ -1062,6 +1063,15 @@ class con_regular():
             self.recall_total.append(recall_test)
             threshold += self.resolution
 
+    def generate_orthogonal_relatoin(self):
+        self.orthog_init = tf.keras.initializers.Orthogonal()
+        self.orthog_value = self.orthog_init(shape=self.shape_relation_patient)
+        self.sess = tf.InteractiveSession()
+        tf.global_variables_initializer().run()
+        self.orthog_input = sess.run(self.orthog_value)
+        sess.close()
+
+
     def cross_validation(self):
         self.f1_score_total = []
         self.acc_total = []
@@ -1077,6 +1087,8 @@ class con_regular():
         self.test_patient_whole = []
         feature_len = self.item_size + self.lab_size
         #self.ave_data_scores_total = np.zeros((self.time_sequence, feature_len))
+        self.generate_orthogonal_relatoin()
+
 
         self.config_model()
         for i in range(5):
