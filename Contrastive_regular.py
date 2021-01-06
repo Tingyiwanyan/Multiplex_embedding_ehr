@@ -1068,8 +1068,8 @@ class con_regular():
         self.orthog_value = self.orthog_init(shape=self.shape_relation_patient)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
-        self.orthog_input = sess.run(self.orthog_value)
-        sess.close()
+        self.orthog_input = self.sess.run(self.orthog_value)
+        self.sess.close()
 
 
     def cross_validation(self):
