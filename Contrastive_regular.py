@@ -375,12 +375,12 @@ class con_regular():
                                                             self.latent_dim + self.latent_dim_demo])
 
         self.relation_patients_pos_add = tf.math.add(self.x_skip_contrast,self.relation_patients_broad_pos)
-        #self.relation_patients_neg_add = tf.math.add(self.x_negative_contrast,self.relation_patients_broad_neg)
-        self.relation_patients_neg_add = self.x_negative_contrast
+        self.relation_patients_neg_add = tf.math.add(self.x_negative_contrast,self.relation_patients_broad_neg)
+        #self.relation_patients_neg_add = self.x_negative_contrast
 
         self.relation_patients_pos_add_weight = tf.math.multiply(self.relation_patients_pos_add,self.softmax_weight_pos_broad)
-        #self.relation_patients_neg_add_weight = tf.math.multiply(self.relation_patients_neg_add,self.softmax_weight_neg_broad)
-        self.relation_patients_neg_add_weight = self.x_negative_contrast
+        self.relation_patients_neg_add_weight = tf.math.multiply(self.relation_patients_neg_add,self.softmax_weight_neg_broad)
+        #self.relation_patients_neg_add_weight = self.x_negative_contrast
 
         """
         project x_origin into relation translation space
@@ -559,9 +559,9 @@ class con_regular():
         """
         mplement sgnn loss contrast
         """
-        negative_training_norm = tf.math.l2_normalize(self.x_negative_contrast, axis=2)
+        negative_training_norm = tf.math.l2_normalize(self.relation_patients_neg_add_weight, axis=2)
 
-        skip_training = tf.broadcast_to(self.x_origin_contrast_,
+        skip_training = tf.broadcast_to(self.x_origin_contrast,
                                         [self.batch_size, self.negative_sample_size,self.lab_size+self.item_size,
                                          self.latent_dim + self.latent_dim_demo])
 
