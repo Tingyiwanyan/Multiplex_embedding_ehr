@@ -43,7 +43,7 @@ class con_regular():
         self.threshold = 0.5
         self.positive_lab_size = 2
         self.negative_lab_size = 1
-        self.positive_sample_size = self.positive_lab_size + 1
+        self.positive_sample_size = self.positive_lab_size# + 1
         # self.positive_sample_size = 2
         self.negative_sample_size = self.negative_lab_size# + 1
         # self.negative_sample_size = 2
@@ -838,11 +838,11 @@ class con_regular():
                     soft_weight[i,j] = 1
 
         for i in range(self.negative_lab_size):
-            pos_compare = self.variable_compare[1+self.positive_lab_size+i,:]
+            pos_compare = self.variable_compare[self.positive_lab_size+i,:]
             compare = np.abs(self.variable_origin-pos_compare)
             for j in range(self.item_size+self.lab_size):
                 if compare[j] > self.softmax_weight_threshold:
-                    soft_weight[i+1+self.positive_lab_size,j] = 1
+                    soft_weight[i+self.positive_lab_size,j] = 1
 
         return soft_weight
 
