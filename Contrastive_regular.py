@@ -41,8 +41,8 @@ class con_regular():
         self.com_size = 12
         self.input_seq = []
         self.threshold = 0.5
-        self.positive_lab_size = 5
-        self.negative_lab_size = 5
+        self.positive_lab_size = 2
+        self.negative_lab_size = 1
         self.positive_sample_size = self.positive_lab_size# + 1
         # self.positive_sample_size = 2
         self.negative_sample_size = self.negative_lab_size# + 1
@@ -379,8 +379,8 @@ class con_regular():
         #self.relation_patients_neg_add = self.x_negative_contrast
 
         self.relation_patients_pos_add_weight = tf.math.multiply(self.relation_patients_pos_add,self.softmax_weight_pos_broad)
-        #self.relation_patients_neg_add_weight = tf.math.multiply(self.relation_patients_neg_add,self.softmax_weight_neg_broad)
-        self.relation_patients_neg_add_weight = self.x_negative_contrast
+        self.relation_patients_neg_add_weight = tf.math.multiply(self.relation_patients_neg_add,self.softmax_weight_neg_broad)
+        #self.relation_patients_neg_add_weight = self.x_negative_contrast
 
         """
         project x_origin into relation translation space
@@ -812,18 +812,37 @@ class con_regular():
 
         return softmax_weight
 
+    def compute_relation_indicator_neg(self,central_node,context_node):
+        softmax_weight = np.zeros((self.item_size+self.lab_size))
+        #features = list(self.kg.dic_vital.keys())+list(self.kg.dic_lab.keys())
+        center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
+        context_data = np.mean(self.compute_time_seq_single(context_node),axis=1)
+        difference = np.abs(center_data-context_data)
+        for i in range(self.item_size+self.lab_size):
+            if difference[i] > self.softmax_weight_threshold:
+                softmax_weight[i] = 1
+
+        return softmax_weight
+
     def compute_soft_weight(self):
-        soft_weight = np.zeros((self.positive_lab_size + self.negative_lab_size, self.item_size+self.lab_size))
+        soft_weight = np.zeros((self.positive_lab_size+self.negative_lab_size, self.item_size+self.lab_size))
         self.variable_pos = np.mean(np.concatenate((self.patient_pos_sample_vital,self.patient_pos_sample_lab),axis=2),axis=0)
         self.variable_neg = np.mean(np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2),axis=0)
         self.variable_compare = np.concatenate((self.variable_pos,self.variable_neg),axis=0)
         self.variable_origin = self.variable_pos[0,:]
-        for i in range(self.positive_lab_size+self.negative_lab_size):
+        for i in range(self.positive_lab_size):
             pos_compare = self.variable_compare[1+i,:]
             compare = np.abs(self.variable_origin-pos_compare)
             for j in range(self.item_size+self.lab_size):
                 if compare[j] < self.softmax_weight_threshold:
                     soft_weight[i,j] = 1
+
+        for i in range(self.negative_lab_size):
+            pos_compare = self.variable_compare[1+self.positive_lab_size+i,:]
+            compare = np.abs(self.variable_origin-pos_compare)
+            for j in range(self.item_size+self.lab_size):
+                if compare[j] > self.softmax_weight_threshold:
+                    soft_weight[i+1+self.positive_lab_size,j] = 1
 
         return soft_weight
 
