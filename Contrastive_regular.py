@@ -198,7 +198,7 @@ class con_regular():
         self.project_input = tf.math.add(tf.matmul(self.input_x, self.weight_projection_w), self.bias_projection_b)
         #self.project_input = tf.matmul(self.input_x, self.weight_projection_w)
         for i in range(self.time_sequence):
-            x_input_cur = tf.gather(self.input_x, i, axis=1)
+            x_input_cur = tf.gather(self.project_input, i, axis=1)
             if i == 0:
                 concat_cur = tf.concat([self.init_hiddenstate, x_input_cur], 2)
             else:
