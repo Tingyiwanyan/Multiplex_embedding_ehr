@@ -43,7 +43,7 @@ class con_regular():
         self.threshold = 0.5
         self.positive_lab_size = 2
         self.negative_lab_size = 1
-        self.positive_sample_size = self.positive_lab_size# + 1
+        self.positive_sample_size = self.positive_lab_size + 1
         # self.positive_sample_size = 2
         self.negative_sample_size = self.negative_lab_size# + 1
         # self.negative_sample_size = 2
