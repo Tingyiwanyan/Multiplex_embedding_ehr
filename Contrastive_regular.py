@@ -830,19 +830,20 @@ class con_regular():
         self.variable_neg = np.mean(np.concatenate((self.patient_neg_sample_vital,self.patient_neg_sample_lab),axis=2),axis=0)
         self.variable_compare = np.concatenate((self.variable_pos,self.variable_neg),axis=0)
         self.variable_origin = self.variable_pos[0,:]
-        for i in range(self.positive_lab_size):
+        for i in range(self.positive_lab_size+self.negative_lab_size):
             pos_compare = self.variable_compare[1+i,:]
             compare = np.abs(self.variable_origin-pos_compare)
             for j in range(self.item_size+self.lab_size):
                 if compare[j] < self.softmax_weight_threshold:
                     soft_weight[i,j] = 1
-
+        """
         for i in range(self.negative_lab_size):
             pos_compare = self.variable_compare[self.positive_lab_size+i,:]
             compare = np.abs(self.variable_origin-pos_compare)
             for j in range(self.item_size+self.lab_size):
                 if compare[j] > self.softmax_weight_threshold:
                     soft_weight[i+self.positive_lab_size,j] = 1
+        """
 
         return soft_weight
 
