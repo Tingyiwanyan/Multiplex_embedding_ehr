@@ -140,8 +140,8 @@ class con_regular():
         """
         Multi relation type for patients
         """
-        self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
-        #self.relation_patients = tf.keras.backend.placeholder([self.item_size+self.lab_size,self.latent_dim+self.latent_dim_demo])
+        #self.relation_patients = tf.Variable(self.init_mortality(shape=self.shape_relation_patient))
+        self.relation_patients = tf.keras.backend.placeholder([self.item_size+self.lab_size,self.latent_dim+self.latent_dim_demo])
         """
         Define orthogonal relation space
         """
@@ -942,7 +942,7 @@ class con_regular():
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
-                                                     #self.relation_patients: self.orthog_input,
+                                                     self.relation_patients: self.orthog_input,
                                                      # self.input_x_com: self.one_batch_com,
                                                      # self.lab_test: self.one_batch_item,
                                                      self.mortality: self.one_batch_mortality,
