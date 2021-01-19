@@ -789,7 +789,7 @@ class knn_cl():
                                                      self.input_x_demo: self.train_one_batch_demo,
                                                      # self.input_x_com: self.one_batch_com,
                                                      # self.lab_test: self.one_batch_item,
-                                                     #self.input_y_logit:self.one_batch_logit,
+                                                     self.input_y_logit:self.one_batch_logit,
                                                      self.mortality: self.one_batch_mortality,
                                                      self.init_hiddenstate: init_hidden_state,
                                                      self.input_icu_intubation:self.one_batch_icu_intubation})
