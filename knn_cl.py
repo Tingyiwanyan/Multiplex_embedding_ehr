@@ -327,6 +327,7 @@ class knn_cl():
         """
         idx_origin = tf.constant([0])
         self.x_origin = tf.gather(self.Dense_patient, idx_origin, axis=1)
+        self.x_origin_ce = tf.squeeze(self.x_origin,[1])
         # self.x_origin = self.hidden_last
 
         idx_skip_mortality = tf.constant([0])
@@ -567,7 +568,7 @@ class knn_cl():
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
          #self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
-        self.output_layer = tf.compat.v1.layers.dense(inputs=self.Dense_patient,
+        self.output_layer = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
                                                       units=2,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                       activation=tf.nn.relu)
