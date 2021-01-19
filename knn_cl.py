@@ -912,7 +912,7 @@ class knn_cl():
 
 
         self.config_model()
-        for i in range(1):
+        for i in range(3):
             self.sess = tf.InteractiveSession()
             tf.global_variables_initializer().run()
             tf.local_variables_initializer().run()
