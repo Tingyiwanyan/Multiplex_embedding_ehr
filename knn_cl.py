@@ -932,7 +932,7 @@ class knn_cl():
             #self.recall_score_total.append(self.recall_test)
             #self.precision_curve_total.append(self.precision_total)
             #self.recall_curve_total.append(self.recall_total)
-            self.test_patient_whole.append(self.test_patient)
+            #self.test_patient_whole.append(self.test_patient)
             self.test_logit_total.append(self.test_logit)
             #self.ave_data_scores_total += self.ave_data_scores
             self.sess.close()
