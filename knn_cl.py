@@ -817,8 +817,7 @@ class knn_cl():
                                                                          self.input_x_demo: self.test_one_batch_demo,
                                                                          # self.input_x_com: self.test_com,
                                                                          self.init_hiddenstate: init_hidden_state,
-                                                                         self.input_icu_intubation:self.one_batch_icu_intubation})[:,
-                            0, :]
+                                                                         self.input_icu_intubation:self.one_batch_icu_intubation})
         """
         self.test_att_score = self.sess.run([self.score_attention,self.input_importance,self.input_x],feed_dict={self.input_x_vital: self.test_data_batch_vital,
                                                                          self.input_x_lab: self.test_one_batch_lab,
@@ -906,7 +905,7 @@ class knn_cl():
 
 
         self.config_model()
-        for i in range(3):
+        for i in range(1):
             self.sess = tf.InteractiveSession()
             tf.global_variables_initializer().run()
             tf.local_variables_initializer().run()

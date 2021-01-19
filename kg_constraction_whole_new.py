@@ -712,7 +712,7 @@ if __name__ == "__main__":
             if i in kg.total_data_icu:
                 icu_data.append(i)
 
-    random_pick_death = random.sample(death_data,1000)
+    random_pick_death = random.sample(death_data,1200)
     reduced_data = [i for i in kg.total_data_mortality if i not in random_pick_death]
     kg.total_data_mortality = reduced_data
 
