@@ -886,6 +886,70 @@ class con_regular():
             self.recall_total.append(recall_test)
             threshold += self.resolution
 
+    def cross_validation(self):
+        self.f1_score_total = []
+        self.acc_total = []
+        self.area_total = []
+        self.auprc_total = []
+        self.test_logit_total = []
+        self.tp_score_total = []
+        self.fp_score_total = []
+        self.precision_score_total = []
+        self.precision_curve_total = []
+        self.recall_score_total = []
+        self.recall_curve_total = []
+        self.test_patient_whole = []
+        #feature_len = self.item_size + self.lab_size
+        #self.ave_data_scores_total = np.zeros((self.time_sequence, feature_len))
+        #self.generate_orthogonal_relatoin()
+
+
+        self.config_model()
+        for i in range(3):
+            self.sess = tf.InteractiveSession()
+            tf.global_variables_initializer().run()
+            tf.local_variables_initializer().run()
+            self.train_data = self.train_data_whole[i]
+            self.test_data = self.test_data_whole[i]
+            self.train()
+            self.test(self.test_data)
+            #self.f1_score_total.append(self.f1_test)
+            #self.acc_total.append(self.acc)
+            self.tp_score_total.append(self.tp_total)
+            self.fp_score_total.append(self.fp_total)
+            self.cal_auc()
+            self.cal_auprc()
+            self.area_total.append(self.area)
+            self.auprc_total.append(self.area_auprc)
+            #self.precision_score_total.append(self.precision_test)
+            #self.recall_score_total.append(self.recall_test)
+            #self.precision_curve_total.append(self.precision_total)
+            #self.recall_curve_total.append(self.recall_total)
+            self.test_patient_whole.append(self.test_patient)
+            self.test_logit_total.append(self.test_logit)
+            #self.ave_data_scores_total += self.ave_data_scores
+            self.sess.close()
+
+        #self.ave_data_scores_total = self.ave_data_scores_total/5
+        #self.norm = np.linalg.norm(self.ave_data_scores_total)
+        #self.ave_data_scores_total = self.ave_data_scores_total/self.norm
+        self.tp_ave_score = np.sum(self.tp_score_total,0)/5
+        self.fp_ave_score = np.sum(self.fp_score_total,0)/5
+        self.precision_ave_score = np.sum(self.precision_curve_total,0)/5
+        self.recall_ave_score = np.sum(self.recall_curve_total,0)/5
+        #print("f1_ave_score")
+        #print(np.mean(self.f1_score_total))
+        #print("acc_ave_score")
+        #print(np.mean(self.acc_total))
+        print("area_ave_score")
+        print(np.mean(self.area_total))
+        #print("precision_ave_score")
+        #print(np.mean(self.precision_total))
+        #print("recall_ave_score")
+        #print(np.mean(self.recall_total))
+        print("auprc_ave_score")
+        print(np.mean(self.auprc_total))
+
     def cal_auc(self):
         self.area = 0
         self.tp_total.sort()
