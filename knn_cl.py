@@ -853,6 +853,13 @@ class knn_cl():
                 value = 0
         """
 
+        self.tp_correct = 0
+        self.tp_neg = 0
+        for i in range(test_length):
+            if self.test_logit[i, 1] == 1:
+                self.tp_correct += 1
+            if self.test_logit[i, 0] == 1:
+                self.tp_neg += 1
 
         threshold = -1.01
         self.resolution = 0.01
