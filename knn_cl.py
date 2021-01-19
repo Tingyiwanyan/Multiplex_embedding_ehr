@@ -6,7 +6,7 @@ import copy
 from itertools import groupby
 import pandas as pd
 
-class con_regular():
+class knn_cl():
     """
     Create dynamic HGM model
     """
