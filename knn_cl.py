@@ -767,6 +767,31 @@ class knn_cl():
 
         return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation
 
+    def train_representation(self):
+        self.length_train = len(self.train_data)
+        init_hidden_state = np.zeros(
+            (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
+        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
+
+        for j in range(self.epoch):
+            print('epoch')
+            print(j)
+            for i in range(iteration):
+                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train(
+                    self.batch_size, i * self.batch_size, self.train_data)
+
+                self.err_ = self.sess.run([self.negative_sum_contrast, self.train_step_neg],
+                                          feed_dict={self.input_x_vital: self.train_one_batch_vital,
+                                                     self.input_x_lab: self.train_one_batch_lab,
+                                                     self.input_x_demo: self.train_one_batch_demo,
+                                                     # self.input_x_com: self.one_batch_com,
+                                                     # self.lab_test: self.one_batch_item,
+                                                     #self.input_y_logit: self.one_batch_logit,
+                                                     self.mortality: self.one_batch_mortality,
+                                                     self.init_hiddenstate: init_hidden_state,
+                                                     self.input_icu_intubation: self.one_batch_icu_intubation})
+                print(self.err_[0])
+
 
     def train(self):
         """
@@ -893,6 +918,7 @@ class knn_cl():
             self.recall_total.append(recall_test)
             threshold += self.resolution
 
+
     def cross_validation(self):
         self.f1_score_total = []
         self.acc_total = []
@@ -918,6 +944,9 @@ class knn_cl():
             tf.local_variables_initializer().run()
             self.train_data = self.train_data_whole[i]
             self.test_data = self.test_data_whole[i]
+            print("im here in train representation")
+            self.train_representation()
+            print("im here in train")
             self.train()
             self.test(self.test_data)
             #self.f1_score_total.append(self.f1_test)
