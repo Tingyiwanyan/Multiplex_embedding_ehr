@@ -791,7 +791,7 @@ class knn_cl():
                                                                              self.input_icu_intubation: self.one_batch_icu_intubation})[
                                 :,
                                 0, :]
-            self.knn_sim_matrix[i*self.batch_size:(i+1)*batch_size,:] = self.test_patient
+            self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
 
     def train_representation(self):
         self.length_train = len(self.train_data)
