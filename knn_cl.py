@@ -754,7 +754,11 @@ class knn_cl():
                 train_one_batch_mortality[i, 1, :] = [1, 0]
                 one_batch_logit[i, 1] = 1
 
-            self.get_positive_patient(self.patient_id)
+            #self.get_positive_patient(self.patient_id)
+            """
+            perform knn nearest sampling
+            """
+            self.get_positive_patient_knn(self.patient_id)
             self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
@@ -824,6 +828,78 @@ class knn_cl():
 
                 index = index + 1
 
+    def get_positive_patient_knn(self, center_node_index):
+        self.patient_pos_sample_vital = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.item_size))
+        self.patient_pos_sample_lab = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.lab_size))
+        self.patient_pos_sample_icu_intubation_label = np.zeros((self.time_sequence, self.positive_lab_size+1, 2))
+        self.patient_pos_sample_demo = np.zeros((self.positive_lab_size + 1, self.demo_size))
+        self.patient_pos_sample_com = np.zeros((self.positive_lab_size + 1, self.com_size))
+        if self.kg.dic_patient[center_node_index]['death_flag'] == 0:
+            flag = 0
+        else:
+            flag = 1
+        neighbor_patient = self.knn_neighbor[center_node_index]["knn_neighbor"]
+        time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
+        time_seq_int = [np.int(k) for k in time_seq]
+        time_seq_int.sort()
+        # time_index = 0
+        # for j in self.time_seq_int:
+        for j in range(self.time_sequence):
+            # if time_index == self.time_sequence:
+            #    break
+            if flag == 0:
+                pick_death_hour = self.kg.dic_patient[center_node_index]['pick_time']#self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
+                start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
+                end_time = start_time + self.time_step_length
+            else:
+                start_time = self.kg.dic_patient[center_node_index]['death_hour'] - self.predict_window_prior + float(
+                    j) * self.time_step_length
+                end_time = start_time + self.time_step_length
+            one_data_vital = self.assign_value_patient(center_node_index, start_time, end_time)
+            one_data_lab = self.assign_value_lab(center_node_index, start_time, end_time)
+            #one_data_icu_label = self.assign_value_icu_intubation(center_node_index, start_time, end_time)
+            # one_data_demo = self.assign_value_demo(center_node_index)
+            self.patient_pos_sample_vital[j, 0, :] = one_data_vital
+            self.patient_pos_sample_lab[j, 0, :] = one_data_lab
+            #self.patient_pos_sample_icu_intubation_label[j,0,:] = one_data_icu_label
+            # time_index += 1
+        one_data_demo = self.assign_value_demo(center_node_index)
+        # one_data_com = self.assign_value_com(center_node_index)
+        self.patient_pos_sample_demo[0, :] = one_data_demo
+        # self.patient_pos_sample_com[0,:] = one_data_com
+        for i in range(self.positive_lab_size):
+            #index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
+            patient_id = neighbor_patient[i]
+            time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
+            time_seq_int = [np.int(k) for k in time_seq]
+            time_seq_int.sort()
+            one_data_demo = self.assign_value_demo(patient_id)
+            # one_data_com = self.assign_value_com(patient_id)
+            self.patient_pos_sample_demo[i + 1, :] = one_data_demo
+            # self.patient_pos_sample_com[i+1,:] = one_data_com
+            # time_index = 0
+            # for j in time_seq_int:
+            for j in range(self.time_sequence):
+                # if time_index == self.time_sequence:
+                #   break
+                # self.time_index = np.int(j)
+                # start_time = float(j)*self.time_step_length
+                # end_time = start_time + self.time_step_length
+                if flag == 0:
+                    pick_death_hour = self.kg.dic_patient[center_node_index]['pick_time']#self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
+                    start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
+                    end_time = start_time + self.time_step_length
+                else:
+                    start_time = self.kg.dic_patient[patient_id]['death_hour'] - self.predict_window_prior + float(
+                        j) * self.time_step_length
+                    end_time = start_time + self.time_step_length
+                one_data_vital = self.assign_value_patient(patient_id, start_time, end_time)
+                one_data_lab = self.assign_value_lab(patient_id, start_time, end_time)
+                #one_data_icu_label = self.assign_value_icu_intubation(patient_id, start_time, end_time)
+                self.patient_pos_sample_vital[j, i + 1, :] = one_data_vital
+                self.patient_pos_sample_lab[j, i + 1, :] = one_data_lab
+                #self.patient_pos_sample_icu_intubation_label[j,i+1,:] = one_data_icu_label
+                # time_index += 1
 
     def train_representation(self):
         self.length_train = len(self.train_data)
@@ -1002,8 +1078,9 @@ class knn_cl():
             tf.local_variables_initializer().run()
             self.train_data = self.train_data_whole[i]
             self.test_data = self.test_data_whole[i]
-            #print("im here in train representation")
-            #self.train_representation()
+            print("im here in train representation")
+            self.train_representation()
+            self.construct_knn_graph()
             print("im here in train")
             self.train()
             self.test(self.test_data)
