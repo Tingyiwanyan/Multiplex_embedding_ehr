@@ -1154,8 +1154,8 @@ class knn_cl():
             tf.local_variables_initializer().run()
             self.train_data = self.train_data_whole[i]
             self.test_data = self.test_data_whole[i]
-            print("im here in train representation")
-            self.train_representation()
+            #print("im here in train representation")
+            #self.train_representation()
             print("im here in train")
             self.train()
             self.test(self.test_data)
