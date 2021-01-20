@@ -329,6 +329,7 @@ class knn_cl():
         idx_origin = tf.constant([0])
         self.x_origin = tf.gather(self.Dense_patient, idx_origin, axis=1)
         self.x_origin_ce = tf.squeeze(self.x_origin,[1])
+        #self.knn_sim_matrix = tf.matmul(self.x_origin_ce, self.x_origin_ce, transpose_b=True)
         # self.x_origin = self.hidden_last
 
         idx_skip_mortality = tf.constant([0])
@@ -792,6 +793,29 @@ class knn_cl():
                                 :,
                                 0, :]
             self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
+
+        self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix,axis=1),1)
+        self.knn_sim_matrix = self.knn_sim_matrix/self.norm_knn
+        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix,self.knn_sim_matrix.T)
+        print("Im here in constructing knn graph")
+        for i in range(self.batch_size*iteration):
+            vec = np.argsort(self.knn_sim_score_matrix[i,:])
+            vec = vec[::-1]
+            index = 0
+            while(index < self.positive_lab_size):
+                center_patient_id = self.train_data[i]
+                center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
+                for j in range(iteration*self.batch_size):
+                    compare_patient_id = self.train_data[vec[j]]
+                    if compare_patient_id == center_patient_id:
+                        continue
+                    flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                    if not center_flag == flag:
+                        continue
+
+
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+
 
     def train_representation(self):
         self.length_train = len(self.train_data)
