@@ -813,8 +813,11 @@ class knn_cl():
                     if not center_flag == flag:
                         continue
 
-
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                    if center_patient_id not in self.dic_patient.keys():
+                        self.knn_neighbor[center_patient_id] = {}
+                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                    else:
+                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
 
 
     def train_representation(self):
