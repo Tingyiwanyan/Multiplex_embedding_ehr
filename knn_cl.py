@@ -775,6 +775,9 @@ class knn_cl():
         self.length_train = len(self.train_data)
         self.knn_neighbor = {}
 
+        init_hidden_state = np.zeros(
+            (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
+        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
         self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train(
             self.length_train, 0, self.train_data)
         self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.test_data_batch_vital,
