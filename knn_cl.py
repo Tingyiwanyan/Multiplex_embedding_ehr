@@ -800,6 +800,7 @@ class knn_cl():
         self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix,self.knn_sim_matrix.T)
         print("Im here in constructing knn graph")
         for i in range(self.batch_size*iteration):
+            print(i)
             vec = np.argsort(self.knn_sim_score_matrix[i,:])
             vec = vec[::-1]
             center_patient_id = self.train_data[i]
