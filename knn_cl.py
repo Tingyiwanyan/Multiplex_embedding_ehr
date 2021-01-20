@@ -16,6 +16,7 @@ class knn_cl():
         # tf.compat.v1.disable_v2_behavior()
         # tf.compat.v1.disable_eager_execution()
         self.kg = kg
+        self.dic_patient = self.kg.dic_patient
 
         self.data_process = data_process
         # self.hetro_model = hetro_model
@@ -813,7 +814,7 @@ class knn_cl():
                     if not center_flag == flag:
                         continue
 
-                    if center_patient_id not in self.dic_patient.keys():
+                    if center_patient_id not in self.knn_neighbor.keys():
                         self.knn_neighbor[center_patient_id] = {}
                         self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
                     else:
