@@ -806,22 +806,23 @@ class knn_cl():
             center_patient_id = self.train_data[i]
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             index = 0
-            while(index < self.positive_lab_size):
-                for j in range(iteration*self.batch_size):
-                    compare_patient_id = self.train_data[vec[j]]
-                    if compare_patient_id == center_patient_id:
-                        continue
-                    flag = self.kg.dic_patient[compare_patient_id]['death_flag']
-                    if not center_flag == flag:
-                        continue
+            for j in range(iteration*self.batch_size):
+                if index == self.positive_lab_size:
+                    break
+                compare_patient_id = self.train_data[vec[j]]
+                if compare_patient_id == center_patient_id:
+                    continue
+                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                if not center_flag == flag:
+                    continue
 
-                    if center_patient_id not in self.knn_neighbor.keys():
-                        self.knn_neighbor[center_patient_id] = {}
-                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                        index += 1
-                    else:
-                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                        index += 1
+                if center_patient_id not in self.knn_neighbor.keys():
+                    self.knn_neighbor[center_patient_id] = {}
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                else:
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+
+                index = index + 1
 
 
     def train_representation(self):
