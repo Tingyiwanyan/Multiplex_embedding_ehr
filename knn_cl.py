@@ -802,23 +802,21 @@ class knn_cl():
         for i in range(self.batch_size*iteration):
             vec = np.argsort(self.knn_sim_score_matrix[i,:])
             vec = vec[::-1]
-            index = 0
-            while(index < self.positive_lab_size):
-                center_patient_id = self.train_data[i]
-                center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
-                for j in range(iteration*self.batch_size):
-                    compare_patient_id = self.train_data[vec[j]]
-                    if compare_patient_id == center_patient_id:
-                        continue
-                    flag = self.kg.dic_patient[compare_patient_id]['death_flag']
-                    if not center_flag == flag:
-                        continue
+            center_patient_id = self.train_data[i]
+            center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
+            for j in range(iteration*self.batch_size):
+                compare_patient_id = self.train_data[vec[j]]
+                if compare_patient_id == center_patient_id:
+                    continue
+                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                if not center_flag == flag:
+                    continue
 
-                    if center_patient_id not in self.knn_neighbor.keys():
-                        self.knn_neighbor[center_patient_id] = {}
-                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                    else:
-                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                if center_patient_id not in self.knn_neighbor.keys():
+                    self.knn_neighbor[center_patient_id] = {}
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                else:
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
 
 
     def train_representation(self):
