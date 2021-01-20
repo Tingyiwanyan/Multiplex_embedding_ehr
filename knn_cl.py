@@ -773,20 +773,25 @@ class knn_cl():
         construct knn graph at every epoch
         """
         self.length_train = len(self.train_data)
+        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
+
+        self.knn_sim_matrix = np.zeros((iteration*self.batch_size,self.latent_dim+self.latent_dim_demo))
         self.knn_neighbor = {}
 
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
-        self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train(
-            self.length_train, 0, self.train_data)
-        self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.train_one_batch_vital,
-                                                                         self.input_x_lab: self.train_one_batch_lab,
-                                                                         self.input_x_demo: self.train_one_batch_demo,
-                                                                         # self.input_x_com: self.test_com,
-                                                                         self.init_hiddenstate: init_hidden_state,
-                                                                         self.input_icu_intubation: self.one_batch_icu_intubation})[
-                            :,
-                            0, :]
+        for i in range(iteration):
+            self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train(
+                self.batch_size, i * self.batch_size, self.train_data)
+            self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.train_one_batch_vital,
+                                                                             self.input_x_lab: self.train_one_batch_lab,
+                                                                             self.input_x_demo: self.train_one_batch_demo,
+                                                                             # self.input_x_com: self.test_com,
+                                                                             self.init_hiddenstate: init_hidden_state,
+                                                                             self.input_icu_intubation: self.one_batch_icu_intubation})[
+                                :,
+                                0, :]
+            self.knn_sim_matrix[i*self.batch_size:(i+1)*batch_size,:] = self.test_patient
 
     def train_representation(self):
         self.length_train = len(self.train_data)
