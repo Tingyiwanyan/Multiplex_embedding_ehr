@@ -804,7 +804,7 @@ class knn_cl():
         self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix,self.knn_sim_matrix.T)
         print("Im here in constructing knn graph")
         for i in range(self.batch_size*iteration):
-            print(i)
+            #print(i)
             vec = np.argsort(self.knn_sim_score_matrix[i,:])
             vec = vec[::-1]
             center_patient_id = self.train_data[i]
@@ -939,6 +939,7 @@ class knn_cl():
         for j in range(self.epoch):
             print('epoch')
             print(j)
+            self.construct_knn_graph()
             for i in range(iteration):
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
                     self.batch_size, i * self.batch_size, self.train_data)
@@ -1080,7 +1081,6 @@ class knn_cl():
             self.test_data = self.test_data_whole[i]
             print("im here in train representation")
             self.train_representation()
-            self.construct_knn_graph()
             print("im here in train")
             self.train()
             self.test(self.test_data)
