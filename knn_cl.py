@@ -978,11 +978,15 @@ class knn_cl():
         for j in range(self.epoch):
             print('epoch')
             print(j)
-            #self.construct_knn_graph()
+            if not j == 0:
+                self.construct_knn_graph()
             for i in range(iteration):
-                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
-                    self.batch_size, i * self.batch_size, self.train_data)
-
+                if j == 0:
+                    self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+                        self.batch_size, i * self.batch_size, self.train_data)
+                else:
+                    self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train(
+                        self.batch_size, i * self.batch_size, self.train_data)
                 self.err_ = self.sess.run([self.negative_sum_contrast, self.train_step_neg],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
