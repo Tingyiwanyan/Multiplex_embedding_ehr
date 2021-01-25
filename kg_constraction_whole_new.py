@@ -10,7 +10,7 @@ from Data_process import kg_process_data
 from Dynamic_hgm_death_whole import dynamic_hgm
 from Muti_construction import Multiplex_network
 from Contrastive_regular import con_regular
-from knn_cl import knn_cl
+from knn_cl_v2 import knn_cl
 #from MLP import MLP_model
 
 
