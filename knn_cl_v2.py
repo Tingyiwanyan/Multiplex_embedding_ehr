@@ -5,13 +5,15 @@ import math
 import copy
 from itertools import groupby
 import pandas as pd
+from tensorflow.keras import Model
 
-class knn_cl():
+class knn_cl(Model):
     """
     Create dynamic HGM model
     """
 
     def __init__(self, kg, data_process):
+        super(knn_cl,self).__init__()
         print("Im here in death")
         # tf.compat.v1.disable_v2_behavior()
         # tf.compat.v1.disable_eager_execution()
