@@ -215,13 +215,13 @@ class knn_cl():
         self.check = concat_cur
 
     def demo_layer(self):
-        self.Dense_demo = tf.compat.v1.layers.dense(inputs=self.input_x_demo,
+        self.Dense_demo = tf.layers.dense(inputs=self.input_x_demo,
                                                     units=self.latent_dim_demo,
                                                     kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                     activation=tf.nn.relu)
 
     def demo_layer_att(self):
-        self.Dense_demo = tf.compat.v1.layers.dense(inputs=self.input_x_demo_att,
+        self.Dense_demo = tf.layers.dense(inputs=self.input_x_demo_att,
                                                     units=self.latent_dim_demo,
                                                     kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                     activation=tf.nn.relu)
@@ -233,7 +233,7 @@ class knn_cl():
         idx_origin = tf.constant([0])
         self.hidden_last_comb = tf.concat([self.hidden_last, self.Dense_demo], 2)
         self.patient_lstm = tf.gather(self.hidden_last_comb, idx_origin, axis=1)
-        self.output_layer = tf.compat.v1.layers.dense(inputs=self.patient_lstm,
+        self.output_layer = tf.layers.dense(inputs=self.patient_lstm,
                                                       units=2,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                       activation=tf.nn.relu)
@@ -570,16 +570,16 @@ class knn_cl():
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
          #self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
-        self.output_layer = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
+        self.train_step_neg = tf.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
+        self.output_layer = tf.layers.dense(inputs=self.x_origin_ce,
                                                       units=2,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                       activation=tf.nn.relu)
         self.logit_sig = tf.nn.softmax(self.output_layer)
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
-        self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.cross_entropy+0.2*self.negative_sum_contrast)
+        self.train_step_ce = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
+        self.train_step_combine = tf.train.AdamOptimizer(1e-3).minimize(0.8*self.cross_entropy+0.2*self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
