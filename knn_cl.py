@@ -1219,6 +1219,7 @@ class knn_cl():
             self.precision_total.append(precision_test)
             self.recall_total.append(recall_test)
             threshold += self.resolution
+            self.out_logit_integer = np.zeros(self.out_logit.shape[0])
 
 
     def cross_validation(self):
