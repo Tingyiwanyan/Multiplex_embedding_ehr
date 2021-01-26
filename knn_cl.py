@@ -1192,7 +1192,7 @@ class knn_cl():
                 if self.out_logit[i,0] > threshold:
                     self.out_logit_integer[i] = 1
 
-            """
+
             for i in range(test_length):
                 if self.real_logit[i,0] == 1 and self.out_logit[i,0] > threshold:
                     tp_test += 1
@@ -1204,12 +1204,14 @@ class knn_cl():
 
             tp_rate = tp_test / self.tp_correct
             fp_rate = fp_test / self.tp_neg
+            """
             if (tp_test+fp_test) == 0:
                 precision_test = 1.0
             else:
                 precision_test = np.float(tp_test) / (tp_test + fp_test)
             recall_test = np.float(tp_test) / (tp_test + fn_test)
             """
+
             precision_test = precision_score(np.squeeze(self.real_logit), self.out_logit_integer, average='micro')
             recall_test = recall_score(np.squeeze(self.real_logit), self.out_logit_integer, average='micro')
             self.tp_total.append(tp_rate)
