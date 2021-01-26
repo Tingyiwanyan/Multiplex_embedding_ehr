@@ -589,7 +589,7 @@ class knn_cl():
         self.focal_loss = tf.squeeze(tf.reduce_sum(self.focal_loss_,axis=0))
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            0.8 * self.cross_entropy + 0.2 * self.negative_sum_contrast)
+            0.8 * self.focal_loss + 0.2 * self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
