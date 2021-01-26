@@ -1204,16 +1204,16 @@ class knn_cl():
 
             tp_rate = tp_test / self.tp_correct
             fp_rate = fp_test / self.tp_neg
-            """
+
             if (tp_test+fp_test) == 0:
                 precision_test = 1.0
             else:
                 precision_test = np.float(tp_test) / (tp_test + fp_test)
             recall_test = np.float(tp_test) / (tp_test + fn_test)
-            """
 
-            precision_test = precision_score(np.squeeze(self.real_logit), self.out_logit_integer, average='macro')
-            recall_test = recall_score(np.squeeze(self.real_logit), self.out_logit_integer, average='macro')
+
+            #precision_test = precision_score(np.squeeze(self.real_logit), self.out_logit_integer, average='macro')
+            #recall_test = recall_score(np.squeeze(self.real_logit), self.out_logit_integer, average='macro')
             self.tp_total.append(tp_rate)
             self.fp_total.append(fp_rate)
             self.precision_total.append(precision_test)
