@@ -1122,11 +1122,11 @@ class knn_cl():
             fp_test = 0
             fn_test = 0
             for i in range(test_length):
-                if self.test_logit[i, 1] == 1 and self.out_logit[i,1] > threshold:
+                if self.real_logit[i,0] == 1 and self.out_logit[i,0] > threshold:
                     tp_test += 1
-                if self.test_logit[i, 0] == 1 and self.out_logit[i,1] > threshold:
+                if self.real_logit[i, 0] == 0 and self.out_logit[i,0] > threshold:
                     fp_test += 1
-                if self.out_logit[i,1] < threshold and self.test_logit[i, 1] == 1:
+                if self.out_logit[i,0] < threshold and self.real_logit[i, 0] == 1:
                     fn_test += 1
 
             tp_rate = tp_test / self.tp_correct
