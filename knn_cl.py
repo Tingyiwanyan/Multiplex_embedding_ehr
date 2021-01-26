@@ -58,7 +58,7 @@ class knn_cl():
         """
         self.init_hiddenstate = tf.keras.backend.placeholder(
             [None, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim])
-        self.input_y_logit = tf.keras.backend.placeholder([None, 2])
+        self.input_y_logit = tf.keras.backend.placeholder([None, 1])
         self.input_x_vital = tf.keras.backend.placeholder(
             [None, self.time_sequence, 1 + self.positive_lab_size + self.negative_lab_size, self.item_size])
         self.input_x_lab = tf.keras.backend.placeholder(
@@ -574,10 +574,10 @@ class knn_cl():
          #self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
         self.output_layer = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
-                                                      units=2,
+                                                      units=1,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
-                                                      activation=tf.nn.relu)
-        self.logit_sig = tf.nn.softmax(self.output_layer)
+                                                      activation=tf.nn.sigmoid)
+        #self.logit_sig = tf.nn.softmax(self.output_layer)
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
