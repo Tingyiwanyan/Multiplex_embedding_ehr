@@ -593,7 +593,7 @@ class knn_cl():
         p_t = self.input_y_logit * self.logit_sig + (tf.ones_like(self.input_y_logit) - self.input_y_logit) * (tf.ones_like(self.input_y_logit) - self.logit_sig) + tf.keras.backend.epsilon()
 
         self.focal_loss = - alpha_t * tf.math.pow((tf.ones_like(self.input_y_logit) - p_t), self.gamma) * tf.math.log(p_t)
-        tf.reduce_mean(focal_loss)
+        tf.reduce_mean(self.focal_loss)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
             0.8 * self.focal_loss + 0.2 * self.negative_sum_contrast)
