@@ -585,7 +585,8 @@ class knn_cl():
         """
         focal loss
         """
-        self.focal_loss = -self.input_y_logit*((1-self.logit_sig)**self.gamma)*tf.log(self.logit_sig)
+        self.focal_loss_ = -self.input_y_logit*((1-self.logit_sig)**self.gamma)*tf.log(self.logit_sig)
+        self.focal_loss = tf.reduce_sum(self.focal_loss,axis=1)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
@@ -725,7 +726,7 @@ class knn_cl():
             (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.com_size))
         # train_one_batch_item = np.zeros((data_length,self.positive_lab_size+self.negative_lab_size,self.item_size))
         train_one_batch_mortality = np.zeros((data_length, 2, 2))
-        one_batch_logit = np.zeros((data_length, 2))
+        one_batch_logit = np.zeros((data_length, 1))
         self.real_logit = np.zeros(data_length)
         # self.item_neg_sample = np.zeros((self.negative_lab_size, self.item_size))
         # self.item_pos_sample = np.zeros((self.positive_lab_size, self.item_size))
@@ -757,10 +758,12 @@ class knn_cl():
                 train_one_batch_mortality[i, 0, :] = [1, 0]
                 train_one_batch_mortality[i, 1, :] = [0, 1]
                 one_batch_logit[i, 0] = 1
+                self.real_logit[i] = 0
             else:
                 train_one_batch_mortality[i, 0, :] = [0, 1]
                 train_one_batch_mortality[i, 1, :] = [1, 0]
                 one_batch_logit[i, 1] = 1
+                self.real_logit[i] = 1
 
             #self.get_positive_patient(self.patient_id)
             """
@@ -829,10 +832,12 @@ class knn_cl():
                 train_one_batch_mortality[i, 0, :] = [1, 0]
                 train_one_batch_mortality[i, 1, :] = [0, 1]
                 one_batch_logit[i, 0] = 1
+                self.real_logit[i] = 0
             else:
                 train_one_batch_mortality[i, 0, :] = [0, 1]
                 train_one_batch_mortality[i, 1, :] = [1, 0]
                 one_batch_logit[i, 1] = 1
+                self.real_logit[i] = 1
 
             self.get_positive_patient(self.patient_id)
             self.get_negative_patient(self.patient_id)
@@ -1026,7 +1031,7 @@ class knn_cl():
                                                      self.input_x_demo: self.train_one_batch_demo,
                                                      # self.input_x_com: self.one_batch_com,
                                                      # self.lab_test: self.one_batch_item,
-                                                     self.input_y_logit:self.one_batch_logit,
+                                                     self.input_y_logit:self.real_logit,
                                                      self.mortality: self.one_batch_mortality,
                                                      self.init_hiddenstate: init_hidden_state,
                                                      self.input_icu_intubation:self.one_batch_icu_intubation})
