@@ -1212,8 +1212,8 @@ class knn_cl():
             recall_test = np.float(tp_test) / (tp_test + fn_test)
             """
 
-            precision_test = precision_score(np.squeeze(self.real_logit), self.out_logit_integer, average='micro')
-            recall_test = recall_score(np.squeeze(self.real_logit), self.out_logit_integer, average='micro')
+            precision_test = precision_score(np.squeeze(self.real_logit), self.out_logit_integer, average='macro')
+            recall_test = recall_score(np.squeeze(self.real_logit), self.out_logit_integer, average='macro')
             self.tp_total.append(tp_rate)
             self.fp_total.append(fp_rate)
             self.precision_total.append(precision_test)
