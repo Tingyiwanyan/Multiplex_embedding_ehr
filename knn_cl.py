@@ -24,6 +24,7 @@ class knn_cl():
         self.test_data_whole = self.data_process.test_patient_whole
         self.train_data = self.train_data_whole[1]
         self.test_data = self.test_data_whole[1]
+        self.gamma = 2
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
@@ -241,6 +242,7 @@ class knn_cl():
         self.logit_sig = tf.nn.softmax(self.output_layer)
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
+
 
 
     def build_dhgm_model(self):
@@ -580,6 +582,11 @@ class knn_cl():
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.train_step_combine = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.cross_entropy+0.2*self.negative_sum_contrast)
+        """
+        focal loss
+        """
+        self.focal_loss = -self.input_y_logit*((1-self.logit_sig)**self.gamma)*tf.log(self.logit_sig)
+        self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
