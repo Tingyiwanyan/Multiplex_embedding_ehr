@@ -586,7 +586,7 @@ class knn_cl():
         focal loss
         """
         self.focal_loss_ = -self.input_y_logit*((1-self.logit_sig)**self.gamma)*tf.log(self.logit_sig)
-        self.focal_loss = tf.reduce_sum(self.focal_loss_,axis=1)
+        self.focal_loss = tf.reduce_sum(self.focal_loss_,axis=0)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
