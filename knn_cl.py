@@ -801,7 +801,7 @@ class knn_cl():
         # train_one_batch_item = np.zeros((data_length,self.positive_lab_size+self.negative_lab_size,self.item_size))
         train_one_batch_mortality = np.zeros((data_length, 2, 2))
         one_batch_logit = np.zeros((data_length, 2))
-        self.real_logit = np.zeros(data_length)
+        self.real_logit = np.zeros((data_length,1))
         # self.item_neg_sample = np.zeros((self.negative_lab_size, self.item_size))
         # self.item_pos_sample = np.zeros((self.positive_lab_size, self.item_size))
         index_batch = 0
@@ -832,12 +832,12 @@ class knn_cl():
                 train_one_batch_mortality[i, 0, :] = [1, 0]
                 train_one_batch_mortality[i, 1, :] = [0, 1]
                 one_batch_logit[i, 0] = 1
-                self.real_logit[i] = 0
+                self.real_logit[i,0] = 0
             else:
                 train_one_batch_mortality[i, 0, :] = [0, 1]
                 train_one_batch_mortality[i, 1, :] = [1, 0]
                 one_batch_logit[i, 1] = 1
-                self.real_logit[i] = 1
+                self.real_logit[i,0] = 1
 
             self.get_positive_patient(self.patient_id)
             self.get_negative_patient(self.patient_id)
