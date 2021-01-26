@@ -735,7 +735,7 @@ class knn_cl():
             (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.com_size))
         # train_one_batch_item = np.zeros((data_length,self.positive_lab_size+self.negative_lab_size,self.item_size))
         train_one_batch_mortality = np.zeros((data_length, 2, 2))
-        one_batch_logit = np.zeros((data_length, 1))
+        one_batch_logit = np.zeros((data_length, 2))
         self.real_logit = np.zeros((data_length,1))
         # self.item_neg_sample = np.zeros((self.negative_lab_size, self.item_size))
         # self.item_pos_sample = np.zeros((self.positive_lab_size, self.item_size))
