@@ -918,6 +918,60 @@ class knn_cl():
 
                 index = index + 1
 
+    def construct_knn_graph_attribute(self):
+        """
+        construct knn graph at every epoch using attribute information
+        """
+        self.length_train = len(self.train_data)
+        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
+
+        self.knn_sim_matrix = np.zeros((iteration*self.batch_size,self.latent_dim+self.latent_dim_demo))
+        self.knn_neighbor = {}
+
+        init_hidden_state = np.zeros(
+            (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
+        for i in range(iteration):
+            self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+                self.batch_size, i * self.batch_size, self.train_data)
+            self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.train_one_batch_vital,
+                                                                             self.input_x_lab: self.train_one_batch_lab,
+                                                                             self.input_x_demo: self.train_one_batch_demo,
+                                                                             # self.input_x_com: self.test_com,
+                                                                             self.init_hiddenstate: init_hidden_state,
+                                                                             self.input_icu_intubation: self.one_batch_icu_intubation})[
+                                :,
+                                0, :]
+            self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
+
+        self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix,axis=1),1)
+        self.knn_sim_matrix = self.knn_sim_matrix/self.norm_knn
+        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix,self.knn_sim_matrix.T)
+        print("Im here in constructing knn graph")
+        for i in range(self.batch_size*iteration):
+            #print(i)
+            vec = np.argsort(self.knn_sim_score_matrix[i,:])
+            vec = vec[::-1]
+            center_patient_id = self.train_data[i]
+            center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
+            index = 0
+            for j in range(iteration*self.batch_size):
+                if index == self.positive_lab_size:
+                    break
+                compare_patient_id = self.train_data[vec[j]]
+                if compare_patient_id == center_patient_id:
+                    continue
+                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                if not center_flag == flag:
+                    continue
+
+                if center_patient_id not in self.knn_neighbor.keys():
+                    self.knn_neighbor[center_patient_id] = {}
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                else:
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+
+                index = index + 1
+
     def get_positive_patient_knn(self, center_node_index):
         self.patient_pos_sample_vital = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.item_size))
         self.patient_pos_sample_lab = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.lab_size))
@@ -1029,9 +1083,9 @@ class knn_cl():
         for j in range(self.epoch):
             print('epoch')
             print(j)
-            self.construct_knn_graph()
+            #self.construct_knn_graph()
             for i in range(iteration):
-                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
+                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
                 self.err_ = self.sess.run([self.focal_loss, self.train_step_combine_fl],
