@@ -573,7 +573,7 @@ class knn_cl():
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
          #self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
-        self.output_layer = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
+        self.logit_sig = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
                                                       units=1,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                       activation=tf.nn.sigmoid)
