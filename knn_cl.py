@@ -581,13 +581,15 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.cross_entropy+0.2*self.negative_sum_contrast)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.cross_entropy+0.2*self.negative_sum_contrast)
         """
         focal loss
         """
         self.focal_loss_ = -tf.math.multiply(self.input_y_logit,tf.math.multiply((1-self.logit_sig)**self.gamma,tf.log(self.logit_sig)))
-        self.focal_loss = tf.reduce_sum(self.focal_loss_,axis=0)
+        self.focal_loss = tf.squeeze(tf.reduce_sum(self.focal_loss_,axis=0))
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
+        self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
+            0.8 * self.cross_entropy + 0.2 * self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
