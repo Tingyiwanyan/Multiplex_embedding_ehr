@@ -585,8 +585,8 @@ class knn_cl():
         """
         focal loss
         """
-        self.focal_loss_ = -tf.math.multiply(self.input_y_logit,tf.math.multiply((1-self.logit_sig)**self.gamma,tf.log(self.logit_sig)))
-        self.focal_loss = tf.squeeze(tf.reduce_sum(self.focal_loss_,axis=0))
+        self.focal_loss_ = -tf.math.pow((tf.ones_like(self.input_y_logit)-self.logit_sig),self.gamma)*tf.math.log(self.logit_sig)
+        self.focal_loss = tf.math.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
             0.8 * self.focal_loss + 0.2 * self.negative_sum_contrast)
@@ -1027,7 +1027,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_ce],
+                self.err_ = self.sess.run([self.focal_loss, self.train_step_fl],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
