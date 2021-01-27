@@ -980,6 +980,7 @@ class knn_cl():
         self.knn_neighbor = {}
 
         for i in self.train_data:
+            print(i)
             center_flag = self.kg.dic_patient[i]['death_flag']
             self.compare_graph = {}
             for j in self.train_data:
