@@ -989,7 +989,7 @@ class knn_cl():
                 if not center_flag == flag:
                     continue
                 self.compare_graph[j] = {}
-                similarity = compute_relation_indicator(i, j)
+                similarity = self.compute_relation_indicator(i, j)
                 self.compare_graph[j].setdefault('similarity', []).append(similarity)
 
             self.neighbors = []
