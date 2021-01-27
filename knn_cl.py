@@ -772,6 +772,10 @@ class knn_cl():
 
         return np.linalg.norm(difference)
 
+    def compute_average_patient(self,central_node):
+        center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
+
+        return center_data
 
     def get_batch_train(self, data_length, start_index, data):
         """
@@ -976,7 +980,46 @@ class knn_cl():
         construct knn graph at every epoch using attribute information
         """
         print("Im here in constructing knn graph")
+        self.length_train = len(self.train_data)
+        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
 
+        self.knn_sim_matrix = np.zeros((iteration * self.batch_size, self.lab_size+self.item_size))
+        self.knn_neighbor = {}
+
+        for i in range(self.batch_size*iteration):
+            patient_input = compute_average_patient(self, central_node)
+            self.knn_sim_matrix[i,:] = patient_input
+
+        self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
+        self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
+        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix, self.knn_sim_matrix.T)
+        print("Im here in constructing knn graph")
+        for i in range(self.batch_size * iteration):
+            # print(i)
+            vec = np.argsort(self.knn_sim_score_matrix[i, :])
+            vec = vec[::-1]
+            center_patient_id = self.train_data[i]
+            center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
+            index = 0
+            for j in range(iteration * self.batch_size):
+                if index == self.positive_lab_size:
+                    break
+                compare_patient_id = self.train_data[vec[j]]
+                if compare_patient_id == center_patient_id:
+                    continue
+                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                if not center_flag == flag:
+                    continue
+
+                if center_patient_id not in self.knn_neighbor.keys():
+                    self.knn_neighbor[center_patient_id] = {}
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                else:
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+
+                index = index + 1
+
+        """
         self.knn_neighbor = {}
 
         for i in self.train_data:
@@ -1014,6 +1057,7 @@ class knn_cl():
                         highest_neighbor = self.check_higest_value(self.neighbors,self.compare_graph)
 
             self.knn_neighbor[i] = self.neighbors
+        """
 
     def check_higest_value(self,neighbors,compare_graph):
         highest_neighbor = neighbors[0]
