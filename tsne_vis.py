@@ -8,6 +8,7 @@ CL_k = np.load('CL_k.npy')
 CL_k_logit = np.load('CL_k_logit.npy')
 CL_k_nearest = np.load('CL_k_nearset.npy')
 CL_k_nearest_logit = np.load('CL_k_nearset_logit.npy')
+CL_k_attribute = np.load('CL_k_attribute.npy')
 
 
 #fig, axs = plt.subplots(2,2)
