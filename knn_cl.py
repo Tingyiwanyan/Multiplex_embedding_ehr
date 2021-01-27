@@ -992,7 +992,7 @@ class knn_cl():
             self.knn_sim_matrix[i,:] = patient_input
 
         #self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
-        s#elf.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
+        #self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
         self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix, self.knn_sim_matrix.T)
         print("Im here in constructing knn graph")
         for i in range(self.batch_size * iteration):
