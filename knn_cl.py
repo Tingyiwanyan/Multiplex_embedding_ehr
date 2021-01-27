@@ -993,7 +993,7 @@ class knn_cl():
                 self.compare_graph[j].setdefault('similarity', []).append(similarity)
 
 
-            for j in self.compare_graph.keys():
+            #for j in self.compare_graph.keys():
 
 
 
