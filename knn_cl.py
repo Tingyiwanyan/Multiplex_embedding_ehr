@@ -992,39 +992,37 @@ class knn_cl():
                 similarity = compute_relation_indicator(i, j)
                 self.compare_graph[j].setdefault('similarity', []).append(similarity)
 
-
-            #for j in self.compare_graph.keys():
-
-
-
-
-
-
-
-        for i in range(self.batch_size*iteration):
-            #print(i)
-            vec = np.argsort(self.knn_sim_score_matrix[i,:])
-            vec = vec[::-1]
-            center_patient_id = self.train_data[i]
-            center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
+            self.neighbors = []
             index = 0
-            for j in range(iteration*self.batch_size):
+            for j in self.compare_graph.keys():
                 if index == self.positive_lab_size:
                     break
-                compare_patient_id = self.train_data[vec[j]]
-                if compare_patient_id == center_patient_id:
-                    continue
-                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
-                if not center_flag == flag:
-                    continue
-
-                if center_patient_id not in self.knn_neighbor.keys():
-                    self.knn_neighbor[center_patient_id] = {}
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                else:
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-
+                self.neighbors.append(j)
                 index = index + 1
+
+            highest_neighbor = self.check_higest_value(self.neighbors,self.compare_graph)
+
+            for j in self.compare_graph.keys():
+                if not j in self.neighbors:
+                    value_cur = self.compare_graph[highest_neighbor]['similarity']
+                    value_compare = self.compare_graph[j]['similarity']
+
+                    if value_compare < value_cur:
+                        self.neighbors.remove(highest_neighbor)
+                        self.neighbors.append(j)
+                        highest_neighbor = self.check_higest_value(self.neighbors,self.compare_graph)
+
+            self.knn_neighbor[i] = self.neighbors
+
+    def check_higest_value(self,neighbors,compare_graph):
+        highest_neighbor = neighbors[0]
+        value = compare_graph[neighbors[0]]['similarity']
+        for i in neighbors:
+            value_compare = compare_graph[i]['similarity']
+            if value_compare > value:
+                highest_neighbor = i
+
+        return highest_neighbor
 
     def get_positive_patient_knn(self, center_node_index):
         self.patient_pos_sample_vital = np.zeros((self.time_sequence, self.positive_lab_size + 1, self.item_size))
