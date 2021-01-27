@@ -994,7 +994,6 @@ class knn_cl():
         #self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
         #self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
         self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix, self.knn_sim_matrix.T)
-        print("Im here in constructing knn graph")
         for i in range(self.batch_size * iteration):
             # print(i)
             vec = np.argsort(self.knn_sim_score_matrix[i, :])
@@ -1178,7 +1177,6 @@ class knn_cl():
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
         iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
 
-        self.construct_knn_graph()
         for j in range(self.epoch):
             print('epoch')
             print(j)
@@ -1346,6 +1344,7 @@ class knn_cl():
             self.test_data = self.test_data_whole[i]
             #print("im here in train representation")
             #self.train_representation()
+            self.construct_knn_graph_attribute()
             print("im here in train")
             self.train()
             self.test(self.test_data)
