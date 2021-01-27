@@ -584,7 +584,7 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.2*self.cross_entropy+0.8*self.negative_sum_contrast)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.cross_entropy+0.2*self.negative_sum_contrast)
         """
         focal loss
         """
@@ -599,7 +599,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            0.8 * self.focal_loss + 0.2 * self.negative_sum_contrast)
+            0.6 * self.focal_loss + 0.4 * self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
@@ -1183,7 +1183,7 @@ class knn_cl():
             print(j)
             #self.construct_knn_graph()
             for i in range(iteration):
-                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
+                self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
                 self.err_ = self.sess.run([self.focal_loss, self.train_step_fl],
