@@ -38,7 +38,7 @@ class knn_cl():
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
         self.epoch = 2
-        self.epoch_representation = 4
+        self.epoch_representation = 5
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
         self.lab_size = len(list(kg.dic_lab.keys()))
@@ -584,7 +584,7 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.4*self.cross_entropy+0.6*self.negative_sum_contrast)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.2*self.cross_entropy+0.8*self.negative_sum_contrast)
         """
         focal loss
         """
