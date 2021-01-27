@@ -767,9 +767,10 @@ class knn_cl():
         #features = list(self.kg.dic_vital.keys())+list(self.kg.dic_lab.keys())
         center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
         context_data = np.mean(self.compute_time_seq_single(context_node),axis=1)
-        difference = np.abs(center_data-context_data)
+        #difference = np.abs(center_data-context_data)
+        difference = np.abs(center_data - context_data)
 
-        return np.linalg.norm
+        return np.linalg.norm(difference)
 
 
     def get_batch_train(self, data_length, start_index, data):
@@ -984,8 +985,14 @@ class knn_cl():
             for j in self.train_data:
                 if i == j:
                     continue
-                if j not in self.compare_graph:
-                    a = 3
+                flag = self.kg.dic_patient[j]['death_flag']
+                if not center_flag == flag:
+                    continue
+                self.compare_graph[j] = {}
+                similarity = compute_relation_indicator(i, j)
+                self.compare_graph[j].setdefault('similarity', []).append(similarity)
+
+
 
 
 
@@ -1131,7 +1138,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_ce],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
