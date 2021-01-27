@@ -722,6 +722,58 @@ class knn_cl():
 
         return one_sample
 
+    def compute_time_seq_single(self,central_node_variable):
+        """
+        compute single node feature values
+        """
+        time_seq_variable = np.zeros((self.item_size + self.lab_size, self.time_sequence))
+        if self.kg.dic_patient[central_node_variable]['death_flag'] == 0:
+            flag = 0
+            # neighbor_patient = self.kg.dic_death[0]
+        else:
+            flag = 1
+            # neighbor_patient = self.kg.dic_death[1]
+        time_seq = self.kg.dic_patient[central_node_variable]['prior_time_vital'].keys()
+        time_seq_int = [np.int(k) for k in time_seq]
+        time_seq_int.sort()
+        # time_index = 0
+        # for j in self.time_seq_int:
+        for j in range(self.time_sequence):
+            # if time_index == self.time_sequence:
+            #    break
+            if flag == 0:
+                pick_death_hour = self.kg.dic_patient[central_node_variable][
+                    'pick_time']  # self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
+                start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
+                end_time = start_time + self.time_step_length
+            else:
+                start_time = self.kg.dic_patient[central_node_variable][
+                                 'death_hour'] - self.predict_window_prior + float(
+                    j) * self.time_step_length
+                end_time = start_time + self.time_step_length
+            one_data_vital = self.assign_value_patient(central_node_variable, start_time, end_time)
+            one_data_lab = self.assign_value_lab(central_node_variable, start_time, end_time)
+            # one_data_icu_label = self.assign_value_icu_intubation(center_node_index, start_time, end_time)
+            # one_data_demo = self.assign_value_demo(center_node_index)
+            # self.patient_pos_sample_vital[j, 0, :] = one_data_vital
+            # self.patient_pos_sample_lab[j, 0, :] = one_data_lab
+            one_data = np.concatenate([one_data_vital, one_data_lab])
+            time_seq_variable[:,j] = one_data
+
+        return time_seq_variable
+
+    def compute_relation_indicator(self,central_node,context_node):
+        softmax_weight = np.zeros((self.item_size+self.lab_size))
+        #features = list(self.kg.dic_vital.keys())+list(self.kg.dic_lab.keys())
+        center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
+        context_data = np.mean(self.compute_time_seq_single(context_node),axis=1)
+        difference = np.abs(center_data-context_data)
+        for i in range(self.item_size+self.lab_size):
+            if difference[i] < self.softmax_weight_threshold:
+                softmax_weight[i] = 1
+
+        return softmax_weight
+
     def get_batch_train(self, data_length, start_index, data):
         """
         get training batch data
@@ -924,31 +976,8 @@ class knn_cl():
         """
         construct knn graph at every epoch using attribute information
         """
-        self.length_train = len(self.train_data)
-        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
-
-        self.knn_sim_matrix = np.zeros((iteration*self.batch_size,self.latent_dim+self.latent_dim_demo))
-        self.knn_neighbor = {}
-
-        init_hidden_state = np.zeros(
-            (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
-        for i in range(iteration):
-            self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
-                self.batch_size, i * self.batch_size, self.train_data)
-            self.test_patient = self.sess.run(self.Dense_patient, feed_dict={self.input_x_vital: self.train_one_batch_vital,
-                                                                             self.input_x_lab: self.train_one_batch_lab,
-                                                                             self.input_x_demo: self.train_one_batch_demo,
-                                                                             # self.input_x_com: self.test_com,
-                                                                             self.init_hiddenstate: init_hidden_state,
-                                                                             self.input_icu_intubation: self.one_batch_icu_intubation})[
-                                :,
-                                0, :]
-            self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
-
-        self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix,axis=1),1)
-        self.knn_sim_matrix = self.knn_sim_matrix/self.norm_knn
-        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix,self.knn_sim_matrix.T)
         print("Im here in constructing knn graph")
+
         for i in range(self.batch_size*iteration):
             #print(i)
             vec = np.argsort(self.knn_sim_score_matrix[i,:])
@@ -1090,7 +1119,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_ce],
+                self.err_ = self.sess.run([self.focal_loss, self.train_step_fl],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
@@ -1246,7 +1275,7 @@ class knn_cl():
             tf.global_variables_initializer().run()
             tf.local_variables_initializer().run()
             self.train_data = self.train_data_whole[i]
-            #self.test_data = self.test_data_whole[i]
+            self.test_data = self.test_data_whole[i]
             #print("im here in train representation")
             #self.train_representation()
             print("im here in train")
