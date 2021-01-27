@@ -987,6 +987,7 @@ class knn_cl():
         self.knn_neighbor = {}
 
         for i in range(self.batch_size*iteration):
+            central_node = self.train_data[i]
             patient_input = self.compute_average_patient(self, central_node)
             self.knn_sim_matrix[i,:] = patient_input
 
