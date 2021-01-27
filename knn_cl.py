@@ -768,11 +768,9 @@ class knn_cl():
         center_data = np.mean(self.compute_time_seq_single(central_node),axis=1)
         context_data = np.mean(self.compute_time_seq_single(context_node),axis=1)
         difference = np.abs(center_data-context_data)
-        for i in range(self.item_size+self.lab_size):
-            if difference[i] < self.softmax_weight_threshold:
-                softmax_weight[i] = 1
 
-        return softmax_weight
+        return np.linalg.norm
+
 
     def get_batch_train(self, data_length, start_index, data):
         """
@@ -987,7 +985,8 @@ class knn_cl():
                 if i == j:
                     continue
                 if j not in self.compare_graph:
-                    continue
+                    a = 3
+
 
 
 
@@ -1127,12 +1126,12 @@ class knn_cl():
         for j in range(self.epoch):
             print('epoch')
             print(j)
-            self.construct_knn_graph()
+            #self.construct_knn_graph()
             for i in range(iteration):
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.focal_loss, self.train_step_combine_fl],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
