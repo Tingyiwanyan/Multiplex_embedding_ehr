@@ -38,7 +38,7 @@ class knn_cl():
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
         self.epoch = 2
-        self.epoch_representation = 3
+        self.epoch_representation = 4
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
         self.lab_size = len(list(kg.dic_lab.keys()))
