@@ -988,7 +988,7 @@ class knn_cl():
 
         for i in range(self.batch_size*iteration):
             central_node = self.train_data[i]
-            patient_input = self.compute_average_patient(self, central_node)
+            patient_input = self.compute_average_patient(central_node)
             self.knn_sim_matrix[i,:] = patient_input
 
         self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
