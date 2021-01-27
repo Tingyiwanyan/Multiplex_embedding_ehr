@@ -37,7 +37,8 @@ class knn_cl():
         self.latent_dim_cell_state = 100
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
-        self.epoch = 3
+        self.epoch = 2
+        self.epoch_representation = 1
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
         self.lab_size = len(list(kg.dic_lab.keys()))
@@ -1148,7 +1149,7 @@ class knn_cl():
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
         iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
 
-        for j in range(self.epoch):
+        for j in range(self.epoch_representation):
             print('epoch')
             print(j)
             self.construct_knn_graph()
@@ -1185,7 +1186,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.focal_loss, self.train_step_combine_fl],
+                self.err_ = self.sess.run([self.focal_loss, self.train_step_fl],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
@@ -1342,8 +1343,8 @@ class knn_cl():
             tf.local_variables_initializer().run()
             self.train_data = self.train_data_whole[i]
             self.test_data = self.test_data_whole[i]
-            #print("im here in train representation")
-            #self.train_representation()
+            print("im here in train representation")
+            self.train_representation()
             #self.construct_knn_graph_attribute()
             print("im here in train")
             self.train()
