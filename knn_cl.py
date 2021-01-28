@@ -1318,6 +1318,22 @@ class knn_cl():
             self.out_logit_integer = np.zeros(self.out_logit.shape[0])
 
 
+    def bootstraping(self):
+        self.config_model()
+        self.sess = tf.InteractiveSession()
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
+        self.train_data = self.train_data_whole[i]
+        self.test_data = self.test_data_whole[i]
+        # self.construct_knn_graph_attribute()
+        #print("im here in train representation")
+        #self.train_representation()
+        print("im here in train")
+        self.train()
+        self.test(self.test_data)
+
+
+
     def cross_validation(self):
         self.f1_score_total = []
         self.acc_total = []
