@@ -49,7 +49,7 @@ class knn_cl():
         self.positive_lab_size = 2
         self.negative_lab_size = 1
         self.negative_lab_size_knn = 2
-        self.knn_neighbor_numbers = 20
+        self.knn_neighbor_numbers = 10
         self.positive_sample_size = self.positive_lab_size# + 1
         # self.positive_sample_size = 2
         self.negative_sample_size = self.negative_lab_size# + 1
