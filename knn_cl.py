@@ -1155,18 +1155,24 @@ class knn_cl():
             neighbor_patient = self.kg.dic_death[1]
             neighbor_patient_same = self.kg.dic_death[0]
             flag = 1
+            flag_knn = 0
         else:
             neighbor_patient = self.kg.dic_death[0]
             neighbor_patient_same = self.kg.dic_death[1]
             flag = 0
+            flag_knn = 1
+
+        flag_ = flag
 
         neighbor_patient_knn = self.knn_neighbor[center_node_index]["knn_neighbor"]
         neighbor_patient_knn_neg = [i for i in neighbor_patient_same if i not in neighbor_patient_knn]
         for i in range(self.negative_lab_size):
             if i < self.negative_lab_size_knn:
+                flag_ = flag_knn
                 index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_knn_neg), 1)))
                 patient_id = neighbor_patient_knn_neg[index_neighbor]
             else:
+                flag_ = flag
                 index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
                 patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
@@ -1184,7 +1190,7 @@ class knn_cl():
                 # self.time_index = np.int(j)
                 # start_time = float(j)*self.time_step_length
                 # end_time = start_time + self.time_step_length
-                if flag == 0:
+                if flag_ == 0:
                     pick_death_hour = self.kg.dic_patient[center_node_index]['pick_time']#self.kg.mean_death_time + np.int(np.floor(np.random.normal(0, 20, 1)))
                     start_time = pick_death_hour - self.predict_window_prior + float(j) * self.time_step_length
                     end_time = start_time + self.time_step_length
