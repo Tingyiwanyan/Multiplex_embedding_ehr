@@ -1165,7 +1165,7 @@ class knn_cl():
         for i in range(self.negative_lab_size):
             if i < self.negative_lab_size_knn:
                 index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_knn_neg), 1)))
-                patient_id = neighbor_patient[index_neighbor]
+                patient_id = neighbor_patient_knn_neg[index_neighbor]
             else:
                 index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
                 patient_id = neighbor_patient[index_neighbor]
