@@ -1162,7 +1162,7 @@ class knn_cl():
             flag = 0
             flag_knn = 1
 
-        neighbor_whole = self.kg.dic_death[0]+self.kg_dic_death[1]
+        neighbor_whole = self.kg.dic_death[0]+self.kg.dic_death[1]
         neighbor_patient_knn = self.knn_neighbor[center_node_index]["knn_neighbor"]
 
 
