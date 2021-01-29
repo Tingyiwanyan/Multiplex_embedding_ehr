@@ -961,7 +961,7 @@ class knn_cl():
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             index = 0
             for j in range(iteration*self.batch_size):
-                if index == self.positive_lab_size:
+                if index == self.knn_neighbor_numbers:
                     break
                 compare_patient_id = self.train_data[vec[j]]
                 if compare_patient_id == center_patient_id:
