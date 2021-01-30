@@ -46,10 +46,10 @@ class knn_cl():
         self.com_size = 12
         self.input_seq = []
         self.threshold = 0.5
-        self.positive_lab_size = 10
+        self.positive_lab_size = 3
         self.negative_lab_size = self.batch_size - 1
         self.negative_lab_size_knn = 2
-        self.knn_neighbor_numbers = 10
+        self.knn_neighbor_numbers = self.positive_lab_size
         self.positive_sample_size = self.positive_lab_size# + 1
         # self.positive_sample_size = 2
         self.negative_sample_size = self.negative_lab_size# + 1
@@ -1121,8 +1121,8 @@ class knn_cl():
         self.patient_pos_sample_demo[0, :] = one_data_demo
         # self.patient_pos_sample_com[0,:] = one_data_com
         for i in range(self.positive_lab_size):
-            index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
-            patient_id = neighbor_patient[index_neighbor]
+            #index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
+            patient_id = neighbor_patient[i]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
