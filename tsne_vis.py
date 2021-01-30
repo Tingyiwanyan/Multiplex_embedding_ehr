@@ -11,6 +11,7 @@ CL_k_logit = np.load('CL_k_logit.npy')
 
 #CL = TSNE(n_components=2).fit_transform(CL)
 #CL_k = TSNE(n_components=2).fit_transform(CL_k)
+CL_k = TSNE(n_components=2).fit_transform(CL_k)
 CL_k_nearest = TSNE(n_components=2).fit_transform(CL_k_nearest)
 #CL_k_attribute = TSNE(n_components=2).fit_transform(CL_k_attribute)
 

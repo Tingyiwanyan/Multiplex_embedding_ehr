@@ -47,8 +47,8 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.positive_lab_size = 3
-        self.negative_lab_size = self.batch_size - 1
-        self.negative_lab_size_knn = 2
+        self.negative_lab_size = 10
+        self.negative_lab_size_knn = negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
         self.positive_sample_size = self.positive_lab_size# + 1
         # self.positive_sample_size = 2
@@ -843,7 +843,7 @@ class knn_cl():
             perform knn nearest sampling
             """
             self.get_positive_patient_knn(self.patient_id)
-            self.get_negative_patient_batch(self.patient_id)
+            self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -916,7 +916,7 @@ class knn_cl():
                 self.real_logit[i,0] = 1
 
             self.get_positive_patient(self.patient_id)
-            self.get_negative_patient_batch(self.patient_id)
+            self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
