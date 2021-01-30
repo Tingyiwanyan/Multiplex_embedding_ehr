@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-CL_k_nearest = np.load('CE_k_nearest.npy')
-CL_k_nearest_logit = np.load('CE_k_nearest_logit.npy')
+CL_k_nearest = np.load('CL_k.npy')
+CL_k_nearest_logit = np.load('CL_k_logit.npy')
 
 #CL = TSNE(n_components=2).fit_transform(CL)
 #CL_k = TSNE(n_components=2).fit_transform(CL_k)
