@@ -1227,7 +1227,7 @@ class knn_cl():
         self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
         self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
 
-        neighbor_whole = self.self.neg_patient_id
+        neighbor_whole = self.neg_patient_id
         #neighbor_patient_knn = [i for i in neighbor_whole if ]
 
         neighbor_patient_knn_neg = [i for i in neighbor_whole if not i == center_node_index]
