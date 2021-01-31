@@ -972,7 +972,7 @@ class knn_cl():
             index = 0
             for j in range(iteration*self.batch_size):
                 if center_patient_id in self.knn_neighbor.keys():
-                    index = len(self.knn_neighbor.[center_patient_id]['knn_neighbor'])
+                    index = len(self.knn_neighbor[center_patient_id]['knn_neighbor'])
                 if index == self.knn_neighbor_numbers:
                     break
                 compare_patient_id = self.train_data[vec[j]]
