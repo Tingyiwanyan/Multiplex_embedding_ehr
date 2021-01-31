@@ -46,7 +46,7 @@ class knn_cl():
         self.com_size = 12
         self.input_seq = []
         self.threshold = 0.5
-        self.positive_lab_size = 5
+        self.positive_lab_size = 7
         self.negative_lab_size = self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
