@@ -942,6 +942,7 @@ class knn_cl():
 
         self.knn_sim_matrix = np.zeros((iteration*self.batch_size,self.latent_dim+self.latent_dim_demo))
         self.knn_neighbor = {}
+        self.knn_neg_neighbor = {}
 
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
@@ -969,6 +970,39 @@ class knn_cl():
             center_patient_id = self.train_data[i]
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             index = 0
+            for j in range(iteration*self.batch_size):
+                if center_patient_id in self.knn_neighbor.keys():
+                    index = len(self.knn_neighbor.[center_patient_id]['knn_neighbor'])
+                if index == self.knn_neighbor_numbers:
+                    break
+                compare_patient_id = self.train_data[vec[j]]
+                if compare_patient_id == center_patient_id:
+                    continue
+                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                if not center_flag == flag:
+                    continue
+
+                if compare_patient_id in self.knn_neighbor.keys():
+                    index_compare = len(self.knn_neighbor[compare_patient_id]['knn_neighbor'])
+                    if index_compare == self.knn_neighbor_numbers:
+                        continue
+
+                if center_patient_id not in self.knn_neighbor.keys():
+                    self.knn_neighbor[center_patient_id] = {}
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                else:
+                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+
+                if compare_patient_id not in self.knn_neighbor.keys():
+                    self.knn_neighbor[compare_patient_id] = {}
+                    self.knn_neighbor[compare_patient_id].setdefault('knn_neighbor', []).append(center_patient_id)
+                else:
+                    self.knn_neighbor[compare_patient_id].setdefault('knn_neighbor', []).append(center_patient_id)
+
+
+                index = index + 1
+
+            index_neg = 0
             for j in range(iteration*self.batch_size):
                 if index == self.knn_neighbor_numbers:
                     break
