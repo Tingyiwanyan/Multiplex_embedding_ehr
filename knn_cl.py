@@ -971,55 +971,38 @@ class knn_cl():
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             index = 0
             for j in range(iteration*self.batch_size):
-                if center_patient_id in self.knn_neighbor.keys():
-                    index = len(self.knn_neighbor[center_patient_id]['knn_neighbor'])
                 if index == self.knn_neighbor_numbers:
                     break
                 compare_patient_id = self.train_data[vec[j]]
                 if compare_patient_id == center_patient_id:
                     continue
                 flag = self.kg.dic_patient[compare_patient_id]['death_flag']
-                if not center_flag == flag:
-                    continue
-
-                if compare_patient_id in self.knn_neighbor.keys():
-                    index_compare = len(self.knn_neighbor[compare_patient_id]['knn_neighbor'])
-                    if index_compare == self.knn_neighbor_numbers:
-                        continue
-
-                if center_patient_id not in self.knn_neighbor.keys():
-                    self.knn_neighbor[center_patient_id] = {}
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                else:
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-
-                if compare_patient_id not in self.knn_neighbor.keys():
-                    self.knn_neighbor[compare_patient_id] = {}
-                    self.knn_neighbor[compare_patient_id].setdefault('knn_neighbor', []).append(center_patient_id)
-                else:
-                    self.knn_neighbor[compare_patient_id].setdefault('knn_neighbor', []).append(center_patient_id)
+                if center_flag == flag:
+                    if center_patient_id not in self.knn_neighbor.keys():
+                        self.knn_neighbor[center_patient_id] = {}
+                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                    else:
+                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
 
 
-                index = index + 1
+                    index = index + 1
 
             index_neg = 0
             for j in range(iteration*self.batch_size):
-                if index == self.knn_neighbor_numbers:
+                if index_neg == self.negative_lab_size:
                     break
                 compare_patient_id = self.train_data[vec[j]]
                 if compare_patient_id == center_patient_id:
                     continue
                 flag = self.kg.dic_patient[compare_patient_id]['death_flag']
                 if not center_flag == flag:
-                    continue
+                    if center_patient_id not in self.knn_neg_neighbor.keys():
+                        self.knn_neg_neighbor[center_patient_id] = {}
+                        self.knn_neg_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                    else:
+                        self.knn_neg_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
 
-                if center_patient_id not in self.knn_neighbor.keys():
-                    self.knn_neighbor[center_patient_id] = {}
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                else:
-                    self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-
-                index = index + 1
+                    index_neg = index_neg + 1
 
     def construct_knn_graph_attribute(self):
         """
@@ -1205,10 +1188,11 @@ class knn_cl():
             flag = 0
             flag_knn = 1
 
-        neighbor_whole = self.kg.dic_death[0]+self.kg.dic_death[1]
-        neighbor_patient_knn = self.knn_neighbor[center_node_index]["knn_neighbor"]
+        #neighbor_whole = self.kg.dic_death[0]+self.kg.dic_death[1]
+        #neighbor_patient_knn = self.knn_neighbor[center_node_index]["knn_neighbor"]
 
-        neighbor_patient_knn_neg = [i for i in neighbor_whole if i not in neighbor_patient_knn]
+        #neighbor_patient_knn_neg = [i for i in neighbor_whole if i not in neighbor_patient_knn]
+        neighbor_patient_knn_neg = self.knn_neg_neighbor[center_node_index]
         for i in range(self.negative_lab_size):
             """
             if i < self.negative_lab_size_knn:
@@ -1220,8 +1204,8 @@ class knn_cl():
                 index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
                 patient_id = neighbor_patient[index_neighbor]
             """
-            index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_knn_neg), 1)))
-            patient_id = neighbor_patient_knn_neg[index_neighbor]
+            #index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_knn_neg), 1)))
+            patient_id = neighbor_patient_knn_neg[i]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
