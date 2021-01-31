@@ -1108,7 +1108,7 @@ class knn_cl():
             flag = 0
         else:
             flag = 1
-        neighbor_patient = self.knn_neighbor[center_node_index]["knn_neighbor"]
+        neighbor_patient = self.knn_neighbor[center_node_index]['knn_neighbor']
         time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
         time_seq_int = [np.int(k) for k in time_seq]
         time_seq_int.sort()
@@ -1192,7 +1192,7 @@ class knn_cl():
         #neighbor_patient_knn = self.knn_neighbor[center_node_index]["knn_neighbor"]
 
         #neighbor_patient_knn_neg = [i for i in neighbor_whole if i not in neighbor_patient_knn]
-        neighbor_patient_knn_neg = self.knn_neg_neighbor[center_node_index]
+        neighbor_patient_knn_neg = self.knn_neg_neighbor[center_node_index]['knn_neighbor']
         for i in range(self.negative_lab_size):
             """
             if i < self.negative_lab_size_knn:
