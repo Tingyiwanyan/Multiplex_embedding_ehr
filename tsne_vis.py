@@ -10,10 +10,14 @@ CL_k_nearest_logit = np.load('CE_k_nearest_neg_logit.npy')
 CL_k = np.load('CL_k.npy')
 CL_k_logit = np.load('CL_k_logit.npy')
 
+reducer = umap.UMAP()
+
 #CL = TSNE(n_components=2).fit_transform(CL)
 #CL_k = TSNE(n_components=2).fit_transform(CL_k)
-CL_k = TSNE(n_components=2).fit_transform(CL_k)
-CL_k_nearest = TSNE(n_components=2).fit_transform(CL_k_nearest)
+#CL_k = TSNE(n_components=2).fit_transform(CL_k)
+CL_k = reducer.fit_transform(CL_k)
+#CL_k_nearest = TSNE(n_components=2).fit_transform(CL_k_nearest)
+CL_k_nearest = reducer.fit_transform(CL_k_nearest)
 #CL_k_attribute = TSNE(n_components=2).fit_transform(CL_k_attribute)
 
 

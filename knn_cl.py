@@ -30,7 +30,7 @@ class knn_cl():
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
-        self.batch_size = 64
+        self.batch_size = 16
         self.time_sequence = 4
         self.time_step_length = 6
         self.predict_window_prior = self.time_sequence * self.time_step_length
@@ -46,7 +46,9 @@ class knn_cl():
         self.com_size = 12
         self.input_seq = []
         self.threshold = 0.5
+        self.check_num_threshold_neg = 2*self.batch_size
         self.positive_lab_size = 3
+        self.check_num_threshold_pos = 2*self.positive_lab_size
         self.negative_lab_size = self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
@@ -843,7 +845,7 @@ class knn_cl():
             perform knn nearest sampling
             """
             self.get_positive_patient_knn(self.patient_id)
-            self.get_negative_patient_knn(self.patient_id)
+            self.get_negative_patient_batch(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -958,36 +960,52 @@ class knn_cl():
                                 :,
                                 0, :]
             self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
+            center_patient_id = self.train_data[i]
+            self.knn_neighbor[center_patient_id] = {}
+            self.knn_neighbor[center_patient_id]['knn_neighbor'] = {}
+            self.knn_neighbor[center_patient_id]['index'] = 0
+
 
         self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix,axis=1),1)
         self.knn_sim_matrix = self.knn_sim_matrix/self.norm_knn
         self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix,self.knn_sim_matrix.T)
+        vec_compare = np.argsort(self.knn_sim_score_matrix,axis=1)
         print("Im here in constructing knn graph")
+
         for i in range(self.batch_size*iteration):
             #print(i)
-            vec = np.argsort(self.knn_sim_score_matrix[i,:])
-            vec = vec[::-1]
+            #vec = np.argsort(self.knn_sim_score_matrix[i,:])
+            vec = vec_compare[i,:][::-1]
             center_patient_id = self.train_data[i]
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
-            index = 0
+            index = self.knn_neighbor[center_patient_id]['index']
+            index_real = 0
             for j in range(iteration*self.batch_size):
-                if index == self.knn_neighbor_numbers:
+                if index == self.knn_neighbor_numbers or index > self.knn_neighbor_numbers:
+                    break
+                if index_real == self.check_num_threshold_pos:
                     break
                 compare_patient_id = self.train_data[vec[j]]
                 if compare_patient_id == center_patient_id:
                     continue
                 flag = self.kg.dic_patient[compare_patient_id]['death_flag']
                 if center_flag == flag:
-                    if center_patient_id not in self.knn_neighbor.keys():
-                        self.knn_neighbor[center_patient_id] = {}
-                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                    else:
-                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                    if i in vec_compare[vec[j],:][::-1][0:self.check_num_threshold_pos]:
+                        if not compare_patient_id in self.knn_neighbor[center_patient_id]['knn_neighbor']:
+                            self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                            self.knn_neighbor[center_patient_id]['index'] = self.knn_neighbor[center_patient_id]['index'] + 1
 
-
-                    index = index + 1
-
+                        index_compare = self.knn_neighbor[compare_patient_id]['index']
+                        if index_compare < self.knn_neighbor_numbers:
+                            if not center_patient_id in self.knn_neighbor[compare_patient_id]['knn_neighbor']:
+                                self.knn_neighbor[compare_patient_id].setdefault('knn_neighbor', []).append(
+                                    center_patient_id)
+                                self.knn_neighbor[compare_patient_id]['index'] = self.knn_neighbor[compare_patient_id][
+                                                                                    'index'] + 1
+                    index_real = index_real + 1
+            """
             index_neg = 0
+            index_real_neg = 0
             for j in range(iteration*self.batch_size):
                 if index_neg == self.negative_lab_size:
                     break
@@ -1003,6 +1021,7 @@ class knn_cl():
                         self.knn_neg_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
 
                     index_neg = index_neg + 1
+            """
 
     def construct_knn_graph_attribute(self):
         """
