@@ -1157,8 +1157,8 @@ class knn_cl():
         self.patient_pos_sample_demo[0, :] = one_data_demo
         # self.patient_pos_sample_com[0,:] = one_data_com
         for i in range(self.positive_lab_size):
-            #index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
-            patient_id = neighbor_patient[i]
+            index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
+            patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
