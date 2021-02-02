@@ -48,7 +48,9 @@ class knn_cl():
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
         self.positive_lab_size = 3
-        self.check_num_threshold_pos = 2*self.positive_lab_size
+        length_train = len(self.train_data)
+        iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
+        self.check_num_threshold_pos = 10*self.positive_lab_size
         self.negative_lab_size = self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
@@ -1058,9 +1060,10 @@ class knn_cl():
             vec = vec_compare[i,:][::-1]
             center_patient_id = self.train_data[i]
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
-            index = self.knn_neighbor[center_patient_id]['index']
+            #index = self.knn_neighbor[center_patient_id]['index']
             index_real = 0
             for j in range(iteration*self.batch_size):
+                index = self.knn_neighbor[center_patient_id]['index']
                 if index == self.knn_neighbor_numbers or index > self.knn_neighbor_numbers:
                     break
                 if index_real == self.check_num_threshold_pos:
@@ -1208,6 +1211,8 @@ class knn_cl():
         else:
             flag = 1
         neighbor_patient = self.knn_neighbor[center_node_index]['knn_neighbor']
+        if neighbor_patient == []:
+            neighbor_patient = [center_node_index]
         time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
         time_seq_int = [np.int(k) for k in time_seq]
         time_seq_int.sort()
