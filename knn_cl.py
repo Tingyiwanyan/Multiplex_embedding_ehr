@@ -935,6 +935,84 @@ class knn_cl():
 
         return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation
 
+    def get_batch_train_test(self, data_length, start_index, data):
+        """
+        get training batch data
+        """
+        train_one_batch_vital = np.zeros(
+            (data_length, self.time_sequence, 1 + self.positive_lab_size + self.negative_lab_size, self.item_size))
+        train_one_batch_lab = np.zeros(
+            (data_length, self.time_sequence, 1 + self.positive_lab_size + self.negative_lab_size, self.lab_size))
+        train_one_batch_icu_intubation = np.zeros((data_length,self.time_sequence,1+self.positive_lab_size+self.negative_lab_size,2))
+        train_one_batch_demo = np.zeros(
+            (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.demo_size))
+        train_one_batch_com = np.zeros(
+            (data_length, 1 + self.positive_lab_size + self.negative_lab_size, self.com_size))
+        # train_one_batch_item = np.zeros((data_length,self.positive_lab_size+self.negative_lab_size,self.item_size))
+        train_one_batch_mortality = np.zeros((data_length, 2, 2))
+        one_batch_logit = np.zeros((data_length, 2))
+        self.real_logit = np.zeros((data_length,1))
+        # self.item_neg_sample = np.zeros((self.negative_lab_size, self.item_size))
+        # self.item_pos_sample = np.zeros((self.positive_lab_size, self.item_size))
+        index_batch = 0
+        index_increase = 0
+        # while index_batch < data_length:
+        self.neg_patient_id = []
+        for i in range(data_length):
+            self.patient_id = data[start_index + i]
+            self.neg_patient_id.append(self.patient_id)
+        for i in range(data_length):
+            self.check_patient = i
+            self.patient_id = data[start_index + i]
+            # if self.kg.dic_patient[self.patient_id]['item_id'].keys() == {}:
+            #   index_increase += 1
+            #  continue
+            # index_batch += 1
+            self.time_seq = self.kg.dic_patient[self.patient_id]['prior_time_vital'].keys()
+            self.time_seq_int = [np.int(k) for k in self.time_seq]
+            self.time_seq_int.sort()
+            time_index = 0
+            flag = self.kg.dic_patient[self.patient_id]['death_flag']
+            """
+            if flag == 0:
+                one_batch_logit[i,0,0] = 1
+                one_batch_logit[i,1,1] = 1
+            else:
+                one_batch_logit[i,0,1] = 1
+                one_batch_logit[i,1,0] = 1
+                self.real_logit[i] = 1
+            """
+            if flag == 0:
+                train_one_batch_mortality[i, 0, :] = [1, 0]
+                train_one_batch_mortality[i, 1, :] = [0, 1]
+                one_batch_logit[i, 0] = 1
+                self.real_logit[i,0] = 0
+            else:
+                train_one_batch_mortality[i, 0, :] = [0, 1]
+                train_one_batch_mortality[i, 1, :] = [1, 0]
+                one_batch_logit[i, 1] = 1
+                self.real_logit[i,0] = 1
+
+            #self.get_positive_patient(self.patient_id)
+            """
+            perform knn nearest sampling
+            """
+            self.get_positive_patient_knn(self.patient_id)
+            self.get_negative_patient_batch(self.patient_id)
+            train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
+                                                  axis=1)
+            train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
+            train_one_data_demo = np.concatenate((self.patient_pos_sample_demo, self.patient_neg_sample_demo), axis=0)
+            train_one_data_com = np.concatenate((self.patient_pos_sample_com, self.patient_neg_sample_com), axis=0)
+            train_one_data_icu_intubation = np.concatenate((self.patient_pos_sample_icu_intubation_label,self.patient_neg_sample_icu_intubation_label),axis=1)
+            train_one_batch_vital[i, :, :, :] = train_one_data_vital
+            train_one_batch_lab[i, :, :, :] = train_one_data_lab
+            train_one_batch_demo[i, :, :] = train_one_data_demo
+            train_one_batch_com[i, :, :] = train_one_data_com
+            train_one_batch_icu_intubation[i,:,:,:] = train_one_data_icu_intubation
+
+        return train_one_batch_vital, train_one_batch_lab, train_one_batch_demo, one_batch_logit, train_one_batch_mortality, train_one_batch_com,train_one_batch_icu_intubation
+
     def construct_knn_graph(self):
         """
         construct knn graph at every epoch
@@ -960,6 +1038,8 @@ class knn_cl():
                                 :,
                                 0, :]
             self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
+
+        for i in range(iteration*self.batch_size):
             center_patient_id = self.train_data[i]
             self.knn_neighbor[center_patient_id] = {}
             self.knn_neighbor[center_patient_id]['knn_neighbor'] = []
