@@ -962,7 +962,7 @@ class knn_cl():
             self.knn_sim_matrix[i*self.batch_size:(i+1)*self.batch_size,:] = self.test_patient
             center_patient_id = self.train_data[i]
             self.knn_neighbor[center_patient_id] = {}
-            self.knn_neighbor[center_patient_id]['knn_neighbor'] = {}
+            self.knn_neighbor[center_patient_id]['knn_neighbor'] = []
             self.knn_neighbor[center_patient_id]['index'] = 0
 
 
