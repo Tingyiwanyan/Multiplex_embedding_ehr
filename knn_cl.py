@@ -847,7 +847,7 @@ class knn_cl():
             perform knn nearest sampling
             """
             self.get_positive_patient_knn(self.patient_id)
-            self.get_negative_patient_batch(self.patient_id)
+            self.get_negative_patient_knn(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -969,6 +969,9 @@ class knn_cl():
             self.knn_neighbor[center_patient_id] = {}
             self.knn_neighbor[center_patient_id]['knn_neighbor'] = []
             self.knn_neighbor[center_patient_id]['index'] = 0
+            self.knn_neg_neighbor[center_patient_id] = {}
+            self.knn_neg_neighbor[center_patient_id]['knn_neighbor'] = []
+            self.knn_neg_neighbor[center_patient_id]['index'] = 0
 
 
         self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix,axis=1),1)
@@ -1009,6 +1012,35 @@ class knn_cl():
                                 self.knn_neighbor[compare_patient_id]['index'] = self.knn_neighbor[compare_patient_id][
                                                                                     'index'] + 1
                     index_real = index_real + 1
+
+            index_real_neg = 0
+            for j in range(iteration * self.batch_size):
+                index = self.knn_neg_neighbor[center_patient_id]['index']
+                if index == self.negative_lab_size or index > self.negative_lab_size:
+                    break
+                if index_real_neg == self.check_num_threshold_neg:
+                    break
+                compare_patient_id = self.train_data[vec[j]]
+                if compare_patient_id == center_patient_id:
+                    continue
+                flag = self.kg.dic_patient[compare_patient_id]['death_flag']
+                if not center_flag == flag:
+                    if i in vec_compare[vec[j], :][::-1][0:self.check_num_threshold_neg]:
+                        if not compare_patient_id in self.knn_neg_neighbor[center_patient_id]['knn_neighbor']:
+                            self.knn_neg_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(
+                                compare_patient_id)
+                            self.knn_neg_neighbor[center_patient_id]['index'] = self.knn_neg_neighbor[center_patient_id][
+                                                                                'index'] + 1
+
+                        index_compare = self.knn_neg_neighbor[compare_patient_id]['index']
+                        if index_compare < self.negative_lab_size:
+                            if not center_patient_id in self.knn_neg_neighbor[compare_patient_id]['knn_neighbor']:
+                                self.knn_neg_neighbor[compare_patient_id].setdefault('knn_neighbor', []).append(
+                                    center_patient_id)
+                                self.knn_neg_neighbor[compare_patient_id]['index'] = self.knn_neg_neighbor[compare_patient_id][
+                                                                                     'index'] + 1
+                    index_real_neg = index_real_neg + 1
+
             """
             index_neg = 0
             index_real_neg = 0
