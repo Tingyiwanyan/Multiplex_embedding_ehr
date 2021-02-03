@@ -50,7 +50,7 @@ class knn_cl():
         self.positive_lab_size = 11
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
-        self.check_num_threshold_pos = 4*self.positive_lab_size
+        self.check_num_threshold_pos = 4*15#self.positive_lab_size
         self.negative_lab_size = self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
@@ -1168,6 +1168,8 @@ class knn_cl():
             flag = 1
             neighbor_patient_ = self.kg.dic_death[1]
         neighbor_patient = self.knn_neighbor[center_node_index]['knn_neighbor']
+        if len(neighbor_patient) == 0:
+            neighbor_patient = [center_node_index]
 
         time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
         time_seq_int = [np.int(k) for k in time_seq]
@@ -1198,12 +1200,8 @@ class knn_cl():
         self.patient_pos_sample_demo[0, :] = one_data_demo
         # self.patient_pos_sample_com[0,:] = one_data_com
         for i in range(self.positive_lab_size):
-            if len(neighbor_patient) == 0:
-                index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_), 1)))
-                patient_id = neighbor_patient_[index_neighbor]
-            else:
-                index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
-                patient_id = neighbor_patient[index_neighbor]
+            index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
+            patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
