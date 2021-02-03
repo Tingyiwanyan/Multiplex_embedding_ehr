@@ -46,7 +46,7 @@ class knn_cl():
         self.com_size = 12
         self.input_seq = []
         self.threshold = 0.5
-        self.check_num_threshold_neg = 2*self.batch_size
+        self.check_num_threshold_neg = 4*self.batch_size
         self.positive_lab_size = 15
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
@@ -1237,12 +1237,12 @@ class knn_cl():
         self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
         self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
         if self.kg.dic_patient[center_node_index]['death_flag'] == 0:
-            #neighbor_patient = self.kg.dic_death[1]
+            neighbor_patient = self.kg.dic_death[1]
             #neighbor_patient_same = self.kg.dic_death[0]
             flag = 1
             flag_knn = 0
         else:
-            #neighbor_patient = self.kg.dic_death[0]
+            neighbor_patient = self.kg.dic_death[0]
             #neighbor_patient_same = self.kg.dic_death[1]
             flag = 0
             flag_knn = 1
@@ -1263,8 +1263,12 @@ class knn_cl():
                 index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
                 patient_id = neighbor_patient[index_neighbor]
             """
-            #index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_knn_neg), 1)))
-            patient_id = neighbor_patient_knn_neg[i]
+            if not len(neighbor_patient_knn_neg) == 0:
+                index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient_knn_neg), 1)))
+                patient_id = neighbor_patient_knn_neg[index_neighbor]
+            else:
+                index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
+                patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
