@@ -46,8 +46,8 @@ class knn_cl():
         self.com_size = 12
         self.input_seq = []
         self.threshold = 0.5
-        self.check_num_threshold_neg = 4*self.batch_size
-        self.positive_lab_size = 15
+        self.check_num_threshold_neg = 2*self.batch_size
+        self.positive_lab_size = 3
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*self.positive_lab_size
@@ -847,7 +847,7 @@ class knn_cl():
             perform knn nearest sampling
             """
             self.get_positive_patient_knn(self.patient_id)
-            self.get_negative_patient_knn(self.patient_id)
+            self.get_negative_patient_batch(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -1012,7 +1012,7 @@ class knn_cl():
                                 self.knn_neighbor[compare_patient_id]['index'] = self.knn_neighbor[compare_patient_id][
                                                                                     'index'] + 1
                     index_real = index_real + 1
-
+            """
             index_real_neg = 0
             for j in range(iteration * self.batch_size):
                 index = self.knn_neg_neighbor[center_patient_id]['index']
@@ -1040,7 +1040,7 @@ class knn_cl():
                                 self.knn_neg_neighbor[compare_patient_id]['index'] = self.knn_neg_neighbor[compare_patient_id][
                                                                                      'index'] + 1
                     index_real_neg = index_real_neg + 1
-
+            """
             """
             index_neg = 0
             index_real_neg = 0
@@ -1400,7 +1400,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_ce],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
