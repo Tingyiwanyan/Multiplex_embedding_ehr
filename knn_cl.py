@@ -605,7 +605,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            0.8 * self.focal_loss + 0.2 * self.negative_sum_contrast)
+            self.focal_loss + 0.2 * self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
@@ -987,23 +987,23 @@ class knn_cl():
             center_patient_id = self.train_data[i]
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             #index = self.knn_neighbor[center_patient_id]['index']
-            index_real = 0
+            #index_real = 0
             for j in range(iteration*self.batch_size):
                 index = self.knn_neighbor[center_patient_id]['index']
                 if index == self.knn_neighbor_numbers or index > self.knn_neighbor_numbers:
                     break
-                if index_real == self.check_num_threshold_pos:
-                    break
+                #if index_real == self.check_num_threshold_pos:
+                    #break
                 compare_patient_id = self.train_data[vec[j]]
                 if compare_patient_id == center_patient_id:
                     continue
                 flag = self.kg.dic_patient[compare_patient_id]['death_flag']
                 if center_flag == flag:
-                    if i in vec_compare[vec[j],:][::-1][0:self.check_num_threshold_pos]:
-                        if not compare_patient_id in self.knn_neighbor[center_patient_id]['knn_neighbor']:
-                            self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
-                            self.knn_neighbor[center_patient_id]['index'] = self.knn_neighbor[center_patient_id]['index'] + 1
-
+                    #if i in vec_compare[vec[j],:][::-1][0:self.check_num_threshold_pos]:
+                    if not compare_patient_id in self.knn_neighbor[center_patient_id]['knn_neighbor']:
+                        self.knn_neighbor[center_patient_id].setdefault('knn_neighbor', []).append(compare_patient_id)
+                        self.knn_neighbor[center_patient_id]['index'] = self.knn_neighbor[center_patient_id]['index'] + 1
+                        """
                         index_compare = self.knn_neighbor[compare_patient_id]['index']
                         if index_compare < self.knn_neighbor_numbers:
                             if not center_patient_id in self.knn_neighbor[compare_patient_id]['knn_neighbor']:
@@ -1011,7 +1011,8 @@ class knn_cl():
                                     center_patient_id)
                                 self.knn_neighbor[compare_patient_id]['index'] = self.knn_neighbor[compare_patient_id][
                                                                                     'index'] + 1
-                    index_real = index_real + 1
+                        """
+                    #index_real = index_real + 1
             """
             index_real_neg = 0
             for j in range(iteration * self.batch_size):
