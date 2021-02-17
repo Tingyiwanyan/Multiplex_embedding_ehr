@@ -8,8 +8,8 @@ class kg_process_data():
     divide into train and test data set
     """
     def __init__(self,kg):
-        self.train_percent = 0.2
-        self.test_percent = 0.8
+        self.train_percent = 0.8
+        self.test_percent = 0.2
         self.kg = kg
         self.train_patient = []
         self.test_patient = []
