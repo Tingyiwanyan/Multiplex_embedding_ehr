@@ -1391,6 +1391,8 @@ class knn_cl():
         """
         train the system
         """
+        self.area_total = []
+        self.auprc_total = []
         self.length_train = len(self.train_data)
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
@@ -1423,11 +1425,20 @@ class knn_cl():
                                                 self.init_hiddenstate:init_hidden_state})
                 print(self.err_lstm[0])
                 """
+            self.test(self.test_data)
+            # self.f1_score_total.append(self.f1_test)
+            # self.acc_total.append(self.acc)
+            self.cal_auc()
+            self.cal_auprc()
+            self.area_total.append(self.area)
+            self.auprc_total.append(self.area_auprc)
 
     def train_combine(self):
         """
         train the system
         """
+        self.area_total = []
+        self.auprc_total = []
         self.length_train = len(self.train_data)
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
@@ -1468,6 +1479,15 @@ class knn_cl():
                                                          self.init_hiddenstate: init_hidden_state,
                                                          self.input_icu_intubation: self.one_batch_icu_intubation})
                 print(self.err_[0])
+
+            self.test(self.test_data)
+            # self.f1_score_total.append(self.f1_test)
+            # self.acc_total.append(self.acc)
+            self.cal_auc()
+            self.cal_auprc()
+            self.area_total.append(self.area)
+            self.auprc_total.append(self.area_auprc)
+
 
     def test(self, data):
         Death = np.zeros([1,2])
@@ -1594,6 +1614,24 @@ class knn_cl():
         print("im here in train")
         self.train()
         self.test(self.test_data)
+
+
+    def acc_epoch(self):
+        self.f1_score_total = []
+        self.acc_total = []
+        self.area_total = []
+        self.auprc_total = []
+        self.test_logit_total = []
+        self.tp_score_total = []
+        self.fp_score_total = []
+        self.precision_score_total = []
+        self.precision_curve_total = []
+        self.recall_score_total = []
+        self.recall_curve_total = []
+        self.test_patient_whole = []
+
+        self.config_model()
+
 
 
 
