@@ -847,7 +847,7 @@ class knn_cl():
             perform knn nearest sampling
             """
             self.get_positive_patient_knn(self.patient_id)
-            self.get_negative_patient_batch(self.patient_id)
+            self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -920,7 +920,7 @@ class knn_cl():
                 self.real_logit[i,0] = 1
 
             self.get_positive_patient(self.patient_id)
-            self.get_negative_patient_batch(self.patient_id)
+            self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -1391,8 +1391,8 @@ class knn_cl():
         """
         train the system
         """
-        self.area_total = []
-        self.auprc_total = []
+        #self.area_total = []
+        #self.auprc_total = []
         self.length_train = len(self.train_data)
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
@@ -1425,20 +1425,18 @@ class knn_cl():
                                                 self.init_hiddenstate:init_hidden_state})
                 print(self.err_lstm[0])
                 """
-            self.test(self.test_data)
-            # self.f1_score_total.append(self.f1_test)
-            # self.acc_total.append(self.acc)
-            self.cal_auc()
-            self.cal_auprc()
-            self.area_total.append(self.area)
-            self.auprc_total.append(self.area_auprc)
+            #self.test(self.test_data)
+            #self.cal_auc()
+            #self.cal_auprc()
+            #self.area_total.append(self.area)
+            #self.auprc_total.append(self.area_auprc)
 
     def train_combine(self):
         """
         train the system
         """
-        self.area_total = []
-        self.auprc_total = []
+        #self.area_total = []
+        #self.auprc_total = []
         self.length_train = len(self.train_data)
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
@@ -1480,13 +1478,11 @@ class knn_cl():
                                                          self.input_icu_intubation: self.one_batch_icu_intubation})
                 print(self.err_[0])
 
-            self.test(self.test_data)
-            # self.f1_score_total.append(self.f1_test)
-            # self.acc_total.append(self.acc)
-            self.cal_auc()
-            self.cal_auprc()
-            self.area_total.append(self.area)
-            self.auprc_total.append(self.area_auprc)
+            #self.test(self.test_data)
+            #self.cal_auc()
+            #self.cal_auprc()
+            #self.area_total.append(self.area)
+            #self.auprc_total.append(self.area_auprc)
 
 
     def test(self, data):
