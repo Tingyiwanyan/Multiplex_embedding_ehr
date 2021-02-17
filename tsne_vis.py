@@ -8,8 +8,8 @@ import umap.umap_ as umap
 CL_k_nearest = np.load('CE_k_nearest.npy')
 CL_k_nearest_logit = np.load('CE_k_nearest_logit.npy')
 
-CL_k = np.load('CL.npy')
-CL_k_logit = np.load('CL_logit.npy')
+CL_k = np.load('fl.npy')
+CL_k_logit = np.load('fl_logit.npy')
 
 reducer = umap.UMAP()
 
