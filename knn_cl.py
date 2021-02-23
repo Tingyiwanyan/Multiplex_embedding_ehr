@@ -37,7 +37,7 @@ class knn_cl():
         self.latent_dim_cell_state = 100
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
-        self.epoch = 5
+        self.epoch = 2
         self.epoch_representation = 1
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
@@ -59,7 +59,7 @@ class knn_cl():
         self.negative_sample_size = self.negative_lab_size# + 1
         # self.negative_sample_size = 2
         self.neighbor_pick_skip = 5
-        self.neighbor_pick_neg = 10
+        self.neighbor_pick_neg = 1
         self.neighbor_death = len(kg.dic_death[1])
         self.neighbor_discharge = len(kg.dic_death[0])
         """
@@ -1406,7 +1406,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_fl],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
