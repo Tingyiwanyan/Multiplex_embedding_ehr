@@ -460,7 +460,7 @@ class knn_cl():
         else:
             neighbor_patient = self.kg.dic_death[0]
             flag = 0
-        for i in range(self.negative_lab_size):
+        for i in range(self.negative_lab_size-self.positive_lab_size):
             index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
             patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
