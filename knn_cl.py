@@ -449,8 +449,8 @@ class knn_cl():
                 # time_index += 1
 
     def get_negative_patient(self, center_node_index):
-        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
-        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
+        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size-self.positive_lab_size, self.item_size))
+        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size-self.positive_lab_size, self.lab_size))
         self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence,self.negative_lab_size,2))
         self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
         self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
@@ -461,11 +461,8 @@ class knn_cl():
             neighbor_patient = self.kg.dic_death[0]
             flag = 0
         for i in range(self.negative_lab_size):
-            if i < self.positive_lab_size:
-                patient_id = self.positive_patient_id_list[i]
-            else:
-                index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
-                patient_id = neighbor_patient[index_neighbor]
+            index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
+            patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
             time_seq_int = [np.int(k) for k in time_seq]
             time_seq_int.sort()
@@ -496,6 +493,8 @@ class knn_cl():
                 self.patient_neg_sample_lab[j, i, :] = one_data_lab
                 #self.patient_neg_sample_icu_intubation_label[j,i,:] = one_data_icu_label
                 # time_index += 1
+        self.patient_neg_sample_lab = np.concatenate([self.patient_neg_sample_lab,self.patient_pos_sample_lab],1)
+        self.patient_neg_sample_vital = np.concatenate([self.patient_neg_sample_vital,self.patient_pos_sample_vital],1)
 
     """
     def get_negative_sample_rep(self):
