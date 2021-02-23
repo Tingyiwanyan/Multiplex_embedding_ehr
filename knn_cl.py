@@ -460,7 +460,7 @@ class knn_cl():
         else:
             neighbor_patient = self.kg.dic_death[0]
             flag = 0
-        for i in range(self.negative_lab_size+self.positive_lab_size):
+        for i in range(self.negative_lab_size):
             if i < self.positive_lab_size:
                 patient_id = self.positive_patient_id_list[i]
             else:
