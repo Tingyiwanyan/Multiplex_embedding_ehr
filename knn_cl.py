@@ -493,8 +493,8 @@ class knn_cl():
                 self.patient_neg_sample_lab[j, i, :] = one_data_lab
                 #self.patient_neg_sample_icu_intubation_label[j,i,:] = one_data_icu_label
                 # time_index += 1
-        self.patient_neg_sample_lab = np.concatenate([self.patient_neg_sample_lab,self.patient_pos_sample_lab],1)
-        self.patient_neg_sample_vital = np.concatenate([self.patient_neg_sample_vital,self.patient_pos_sample_vital],1)
+        self.patient_neg_sample_lab = np.concatenate([self.patient_neg_sample_lab,self.patient_pos_sample_lab[:,1:,:]],1)
+        self.patient_neg_sample_vital = np.concatenate([self.patient_neg_sample_vital,self.patient_pos_sample_vital[:,1:,:]],1)
 
     """
     def get_negative_sample_rep(self):
