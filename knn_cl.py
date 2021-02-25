@@ -47,7 +47,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 5
+        self.positive_lab_size = 9
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -1456,7 +1456,7 @@ class knn_cl():
                     self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
                         self.batch_size, i * self.batch_size, self.train_data)
 
-                    self.err_ = self.sess.run([self.cross_entropy, self.train_step_fl],
+                    self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
                                               feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                          self.input_x_lab: self.train_one_batch_lab,
                                                          self.input_x_demo: self.train_one_batch_demo,
