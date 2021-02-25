@@ -51,7 +51,7 @@ class knn_cl():
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
-        self.negative_lab_size = 1#self.batch_size+self.positive_lab_size#self.batch_size-1
+        self.negative_lab_size = 2+self.positive_lab_size#self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
         self.positive_sample_size = self.positive_lab_size# + 1
