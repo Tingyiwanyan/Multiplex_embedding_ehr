@@ -694,11 +694,11 @@ if __name__ == "__main__":
     kg.age_mean = np.mean(age_total)
     kg.age_std = np.std(age_total)
 
-    death_data = []
+    kg.death_data = []
     for i in kg.dic_patient.keys():
         if kg.dic_patient[i]['death_flag']==1:
             if i in kg.total_data_mortality:
-                death_data.append(i)
+                kg.death_data.append(i)
 
     intubate_data = []
     for i in kg.dic_patient.keys():
