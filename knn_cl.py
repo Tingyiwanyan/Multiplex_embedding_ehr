@@ -47,7 +47,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 9
+        self.positive_lab_size = 5
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -609,7 +609,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.focal_loss + 0.8 * self.negative_sum_contrast)
+            self.focal_loss + 0.2 * self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
@@ -1450,7 +1450,7 @@ class knn_cl():
             print('epoch')
             print(j)
             if not j == 0:
-                self.construct_knn_graph()
+                self.construct_knn_graph_attribute()
             for i in range(iteration):
                 if j == 0:
                     self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
