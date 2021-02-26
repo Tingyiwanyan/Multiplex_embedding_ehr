@@ -26,6 +26,14 @@ class knn_cl():
         self.test_data_whole = self.data_process.test_patient_whole
         self.train_data = self.train_data_whole[0]
         self.test_data = self.test_data_whole[0]
+        self.train_death_data = []
+        for i in self.kg.dic_patient.keys():
+            if self.kg.dic_patient[i]['death_flag'] == 1:
+                if i in self.train_data:
+                    self.train_death_data.append(i)
+        random_pick_death = list(np.array(self.train_death_data)[0:800])
+        reduced_data = [i for i in kg.train_data if i not in random_pick_death]
+        self.train_data = reduced_data
         self.gamma = 2
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
@@ -609,7 +617,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.focal_loss + 0.8 * self.negative_sum_contrast)
+            self.focal_loss + 0.2 * self.negative_sum_contrast)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
@@ -1411,7 +1419,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
