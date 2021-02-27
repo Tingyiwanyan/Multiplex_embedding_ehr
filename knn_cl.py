@@ -31,8 +31,8 @@ class knn_cl():
             if self.kg.dic_patient[i]['death_flag'] == 1:
                 if i in self.train_data:
                     self.train_death_data.append(i)
-        random_pick_death = list(np.array(self.train_death_data)[0:800])
-        reduced_data = [i for i in self.train_data if i not in random_pick_death]
+        #random_pick_death = list(np.array(self.train_data)[0:800])
+        #reduced_data = [i for i in self.train_data if i not in random_pick_death]
         self.train_data = reduced_data
         self.gamma = 2
         self.softmax_weight_threshold = 0.1
