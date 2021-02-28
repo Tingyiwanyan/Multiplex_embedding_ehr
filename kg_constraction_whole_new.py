@@ -714,9 +714,10 @@ if __name__ == "__main__":
 
     #random_pick_death = random.sample(death_data,1200)
 
-    random_pick_death = list(np.array(death_data)[0:1200])
+    random_pick_death = list(np.array(death_data)[0:600])
     reduced_data = [i for i in kg.total_data_mortality if i not in random_pick_death]
     kg.total_data_mortality = reduced_data
+    kg.total_non_death_data = [i for i in kg.total_data_mortality if i not in death_data]
 
 
     random_pick_intubate = random.sample(intubate_data, 200)
