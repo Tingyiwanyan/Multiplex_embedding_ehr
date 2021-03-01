@@ -41,11 +41,11 @@ class knn_cl():
                     self.train_non_death_data.append(i)
                 if i in self.test_data:
                     self.test_non_death_data.append(i)
-        random_pick_death = list(np.array(self.test_data)[0:1082])
-        random_pick_non_death = list(np.array(self.test_non_death_data[0:2810]))
+        random_pick_death = list(np.array(self.train_death_data)[0:1082])
+        random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         reduced_data = [i for i in self.test_data if i not in random_pick_death]
-        self.test_data = reduced_data
-       # reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
+        #self.train_data = reduced_data
+        #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
         #self.test_data = reduced_data_death
         self.gamma = 2
         self.softmax_weight_threshold = 0.1
