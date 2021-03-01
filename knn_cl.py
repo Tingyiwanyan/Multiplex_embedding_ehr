@@ -35,10 +35,12 @@ class knn_cl():
             else:
                 if i in self.train_data:
                     self.train_non_death_data.append(i)
-        random_pick_death = list(np.array(self.train_data)[0:1500])
-        random_pick_non_death = list(np.array(self.train_non_death_data[0:2869]))
+        random_pick_death = list(np.array(self.train_death_data)[0:88])
+        random_pick_non_death = list(np.array(self.train_non_death_data[0:2781]))
         reduced_data = [i for i in self.train_data if i not in random_pick_non_death]
         self.train_data = reduced_data
+        reduced_data_death = [i for i in self.train_data if i not in random_pick_non_death]
+        self.train_data = reduced_data_death
         self.gamma = 2
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
@@ -1424,7 +1426,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
