@@ -27,20 +27,26 @@ class knn_cl():
         self.train_data = self.train_data_whole[0]
         self.test_data = self.test_data_whole[0]
         self.train_death_data = []
+        self.test_death_data = []
         self.train_non_death_data = []
+        self.test_non_death_data = []
         for i in self.kg.dic_patient.keys():
             if self.kg.dic_patient[i]['death_flag'] == 1:
                 if i in self.train_data:
                     self.train_death_data.append(i)
+                if i in self.test_data:
+                    self.test_death_data.append(i)
             else:
                 if i in self.train_data:
                     self.train_non_death_data.append(i)
+                if i in self.test_data:
+                    self.test_non_death_data.append(i)
         random_pick_death = list(np.array(self.train_death_data)[0:59])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
-        reduced_data = [i for i in self.train_data if i not in random_pick_death]
-        self.train_data = reduced_data
-        reduced_data_death = [i for i in self.train_data if i not in random_pick_non_death]
-        self.train_data = reduced_data_death
+        reduced_data = [i for i in self.test_data if i not in random_pick_death]
+        self.test_data = reduced_data
+        reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
+        self.test_data = reduced_data_death
         self.gamma = 2
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
