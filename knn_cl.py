@@ -35,8 +35,8 @@ class knn_cl():
             else:
                 if i in self.train_data:
                     self.train_non_death_data.append(i)
-        random_pick_death = list(np.array(self.train_death_data)[0:74])
-        random_pick_non_death = list(np.array(self.train_non_death_data[0:2795]))
+        random_pick_death = list(np.array(self.train_death_data)[0:88])
+        random_pick_non_death = list(np.array(self.train_non_death_data[0:2781]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
         self.train_data = reduced_data
         reduced_data_death = [i for i in self.train_data if i not in random_pick_non_death]
