@@ -727,6 +727,8 @@ class knn_cl():
         for i in range(self.lab_size):
             if math.isnan(out_sample_lab[i]):
                 out_sample_lab[i] = self.ave_lab[i]
+            if out_sample_lab = 0:
+                out_sample_lab[i] = self.ave_lab[i]
 
         return out_sample_lab
 
