@@ -8,6 +8,8 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 import pandas as pd
 from sklearn.cluster import KMeans
+from sklearn.neighbors import NearestNeighbors
+
 
 class knn_cl():
     """
@@ -1137,18 +1139,21 @@ class knn_cl():
 
         #self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
         #self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
-        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix[:,0:8], self.knn_sim_matrix[:,0:8].T)
+        #self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix[:,0:8], self.knn_sim_matrix[:,0:8].T)
+        self.knn_nbrs = NearestNeighbors(n_neighbors=self.positive_lab_size,algorithm='ball_tree').fit(self.knn_sim_matrix[:,0:8])
+        distance,indices = self.knn_nbrs(self.knn_sim_matrix[:,0:8])
         for i in range(self.batch_size * iteration):
             # print(i)
-            vec = np.argsort(self.knn_sim_score_matrix[i, :])
-            vec = vec[::-1]
+            #vec = np.argsort(self.knn_sim_score_matrix[i, :])
+            #vec = vec[::-1]
+            self.vec = indices
             center_patient_id = self.train_data[i]
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             index = 0
             for j in range(iteration * self.batch_size):
                 if index == self.positive_lab_size:
                     break
-                compare_patient_id = self.train_data[vec[j]]
+                compare_patient_id = self.train_data[self.vec[j]]
                 if compare_patient_id == center_patient_id:
                     continue
                 flag = self.kg.dic_patient[compare_patient_id]['death_flag']
