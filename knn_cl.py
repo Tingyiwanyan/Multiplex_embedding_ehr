@@ -641,6 +641,7 @@ class knn_cl():
     def assign_value_patient(self, patientid, start_time, end_time):
         self.one_sample = np.zeros(self.item_size)
         self.freq_sample = np.zeros(self.item_size)
+        self.ave_item = np.zeros(self.item_size)
         self.times = []
         for i in self.kg.dic_patient[patientid]['prior_time_vital'].keys():
             if (np.int(i) > start_time or np.int(i) == start_time) and np.int(i) < end_time:
@@ -652,17 +653,18 @@ class knn_cl():
                 ave_value = np.mean(
                     [np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_vital'][str(j)][i]])
                 index = self.kg.dic_vital[i]['index']
+                self.ave_item[i] = mean
                 if std == 0:
                     self.one_sample[index] += 0
-                    self.freq_sample[index] += 1
+                    #self.freq_sample[index] += 1
                 else:
-                    self.one_sample[index] = (np.float(ave_value) - mean) / std
+                    self.one_sample[index] = np.float(ave_value) - mean #/ std
                     self.freq_sample[index] += 1
 
         out_sample = self.one_sample / self.freq_sample
         for i in range(self.item_size):
             if math.isnan(out_sample[i]):
-                out_sample[i] = 0
+                out_sample[i] = self.ave_item[i]
 
         return out_sample
 
@@ -692,6 +694,7 @@ class knn_cl():
     def assign_value_lab(self, patientid, start_time, end_time):
         self.one_sample_lab = np.zeros(self.lab_size)
         self.freq_sample_lab = np.zeros(self.lab_size)
+        self.ave_lab = np.zeros(self.lab_size)
         self.times_lab = []
         for i in self.kg.dic_patient[patientid]['prior_time_lab'].keys():
             if (np.int(i) > start_time or np.int(i) == start_time) and np.int(i) < end_time:
@@ -712,17 +715,18 @@ class knn_cl():
                 std = np.float(self.kg.dic_lab[i]['std'])
                 ave_value = np.mean([np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i]])
                 index = self.kg.dic_lab[i]['index']
+                self.ave_lab[i] = mean
                 if std == 0:
                     self.one_sample_lab[index] += 0
-                    self.freq_sample_lab[index] += 1
+                    #self.freq_sample_lab[index] += 1
                 else:
-                    self.one_sample_lab[index] += (np.float(ave_value) - mean) / std
+                    self.one_sample_lab[index] += np.float(ave_value) - mean #/ std
                     self.freq_sample_lab[index] += 1
 
         out_sample_lab = self.one_sample_lab / self.freq_sample_lab
         for i in range(self.lab_size):
             if math.isnan(out_sample_lab[i]):
-                out_sample_lab[i] = 0
+                out_sample_lab[i] = self.ave_lab[i]
 
         return out_sample_lab
 
