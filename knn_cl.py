@@ -1140,7 +1140,7 @@ class knn_cl():
         #self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
         #self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
         #self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix[:,0:8], self.knn_sim_matrix[:,0:8].T)
-        self.knn_nbrs = NearestNeighbors(n_neighbors=self.positive_lab_size,algorithm='ball_tree').fit(self.knn_sim_matrix[:,0:8])
+        self.knn_nbrs = NearestNeighbors(n_neighbors=self.length_train,algorithm='ball_tree').fit(self.knn_sim_matrix[:,0:8])
         distance,indices = self.knn_nbrs.kneighbors(self.knn_sim_matrix[:,0:8])
         for i in range(self.length_train):
             # print(i)
@@ -1151,7 +1151,7 @@ class knn_cl():
             center_flag = self.kg.dic_patient[center_patient_id]['death_flag']
             index = 0
             for j in range(self.length_train):
-                if index == self.positive_lab_size-2:
+                if index == self.positive_lab_size-1:
                     break
                 compare_patient_id = self.train_data[self.vec[i,j]]
                 if compare_patient_id == center_patient_id:
