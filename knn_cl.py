@@ -41,6 +41,15 @@ class knn_cl():
                     self.train_non_death_data.append(i)
                 if i in self.test_data:
                     self.test_non_death_data.append(i)
+
+        self.ave_item = np.zeros(self.item_size)
+        self.ave_lab = np.zeros(self.lab_size)
+        for i in kg.dic_vital.keys():
+            index = self.kg.dic_vital[i]['index']
+            self.ave_item[index] = self.kg.dic_vital[i]['mean_value']
+        for i in kg.dic_lab.keys():
+            index = self.kg.dic_lab[i]['index']
+            self.ave_lab[index] = self.kg.dic_lab[i]['mean_value']
         random_pick_death = list(np.array(self.train_data)[0:3600])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
@@ -641,7 +650,7 @@ class knn_cl():
     def assign_value_patient(self, patientid, start_time, end_time):
         self.one_sample = np.zeros(self.item_size)
         self.freq_sample = np.zeros(self.item_size)
-        self.ave_item = np.zeros(self.item_size)
+        #self.ave_item = np.zeros(self.item_size)
         self.times = []
         for i in self.kg.dic_patient[patientid]['prior_time_vital'].keys():
             if (np.int(i) > start_time or np.int(i) == start_time) and np.int(i) < end_time:
@@ -653,7 +662,7 @@ class knn_cl():
                 ave_value = np.mean(
                     [np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_vital'][str(j)][i]])
                 index = self.kg.dic_vital[i]['index']
-                self.ave_item[index] = mean
+                #self.ave_item[index] = mean
                 if std == 0:
                     self.one_sample[index] += 0
                     #self.freq_sample[index] += 1
@@ -674,7 +683,6 @@ class knn_cl():
             icu_hour = self.kg.dic_patient[patientid]['in_icu_hour']
             if icu_hour > start_time:
                 one_sample_icu_intubation[0] = 1
-
         if self.kg.dic_patient[patientid]['intubation_label'] == 1:
             intubation_hour = self.kg.dic_patient[patientid]['intubation_hour']
             if intubation_hour > start_time and intubation_hour < end_time:
@@ -694,7 +702,7 @@ class knn_cl():
     def assign_value_lab(self, patientid, start_time, end_time):
         self.one_sample_lab = np.zeros(self.lab_size)
         self.freq_sample_lab = np.zeros(self.lab_size)
-        self.ave_lab = np.zeros(self.lab_size)
+        #self.ave_lab = np.zeros(self.lab_size)
         self.times_lab = []
         for i in self.kg.dic_patient[patientid]['prior_time_lab'].keys():
             if (np.int(i) > start_time or np.int(i) == start_time) and np.int(i) < end_time:
@@ -715,7 +723,7 @@ class knn_cl():
                 std = np.float(self.kg.dic_lab[i]['std'])
                 ave_value = np.mean([np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i]])
                 index = self.kg.dic_lab[i]['index']
-                self.ave_lab[index] = mean
+                #self.ave_lab[index] = mean
                 if std == 0:
                     self.one_sample_lab[index] += 0
                     #self.freq_sample_lab[index] += 1
