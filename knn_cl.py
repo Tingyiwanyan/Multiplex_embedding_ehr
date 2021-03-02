@@ -1127,7 +1127,7 @@ class knn_cl():
         self.length_train = len(self.train_data)
         iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
 
-        self.knn_sim_matrix = np.zeros((iteration * self.batch_size, self.lab_size+self.item_size))
+        self.knn_sim_matrix = np.zeros((iteration * self.batch_size, self.item_size+self.lab_size))
         self.knn_neighbor = {}
 
         for i in range(self.batch_size*iteration):
@@ -1137,7 +1137,7 @@ class knn_cl():
 
         #self.norm_knn = np.expand_dims(np.linalg.norm(self.knn_sim_matrix, axis=1), 1)
         #self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
-        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix, self.knn_sim_matrix.T)
+        self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix[:,0:8], self.knn_sim_matrix[:,0:8].T)
         for i in range(self.batch_size * iteration):
             # print(i)
             vec = np.argsort(self.knn_sim_score_matrix[i, :])
