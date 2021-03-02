@@ -1129,10 +1129,10 @@ class knn_cl():
         self.length_train = len(self.train_data)
         iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
 
-        self.knn_sim_matrix = np.zeros((iteration * self.batch_size, self.item_size+self.lab_size))
+        self.knn_sim_matrix = np.zeros((self.length_train, self.item_size+self.lab_size))
         self.knn_neighbor = {}
 
-        for i in range(self.batch_size*iteration):
+        for i in range(self.length_train):
             central_node = self.train_data[i]
             patient_input = self.compute_average_patient(central_node)
             self.knn_sim_matrix[i,:] = patient_input
