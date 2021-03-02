@@ -30,6 +30,9 @@ class knn_cl():
         self.test_death_data = []
         self.train_non_death_data = []
         self.test_non_death_data = []
+        self.item_size = len(list(kg.dic_vital.keys()))
+        self.demo_size = len(list(kg.dic_race.keys()))
+        self.lab_size = len(list(kg.dic_lab.keys()))
         for i in self.kg.dic_patient.keys():
             if self.kg.dic_patient[i]['death_flag'] == 1:
                 if i in self.train_data:
@@ -71,9 +74,6 @@ class knn_cl():
         self.latent_dim_demo = 50
         self.epoch = 4
         self.epoch_representation = 1
-        self.item_size = len(list(kg.dic_vital.keys()))
-        self.demo_size = len(list(kg.dic_race.keys()))
-        self.lab_size = len(list(kg.dic_lab.keys()))
         self.latent_dim = self.item_size + self.lab_size
         self.com_size = 12
         self.input_seq = []
