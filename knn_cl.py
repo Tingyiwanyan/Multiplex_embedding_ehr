@@ -7,6 +7,7 @@ from itertools import groupby
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 import pandas as pd
+from sklearn.cluster import KMeans
 
 class knn_cl():
     """
@@ -53,10 +54,10 @@ class knn_cl():
         for i in kg.dic_lab.keys():
             index = self.kg.dic_lab[i]['index']
             self.ave_lab[index] = self.kg.dic_lab[i]['mean_value']
-        random_pick_death = list(np.array(self.train_data)[0:3600])
+        random_pick_death = list(np.array(self.train_data)[0:2000])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
-        #self.train_data = reduced_data
+        self.train_data = reduced_data
         self.test_data_1 = self.test_data[0:1000]
         self.test_data_2 = self.test_data[1000:1713]
         #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
@@ -667,13 +668,13 @@ class knn_cl():
                     self.one_sample[index] += 0
                     #self.freq_sample[index] += 1
                 else:
-                    self.one_sample[index] = np.float(ave_value) - mean #/ std
+                    self.one_sample[index] = np.float(ave_value) - mean / std
                     self.freq_sample[index] += 1
 
         out_sample = self.one_sample / self.freq_sample
         for i in range(self.item_size):
             if math.isnan(out_sample[i]):
-                out_sample[i] = self.ave_item[i]
+                out_sample[i] = 0
 
         return out_sample
 
@@ -728,15 +729,13 @@ class knn_cl():
                     self.one_sample_lab[index] += 0
                     #self.freq_sample_lab[index] += 1
                 else:
-                    self.one_sample_lab[index] += np.float(ave_value) - mean #/ std
+                    self.one_sample_lab[index] += np.float(ave_value) - mean / std
                     self.freq_sample_lab[index] += 1
 
         out_sample_lab = self.one_sample_lab / self.freq_sample_lab
         for i in range(self.lab_size):
             if math.isnan(out_sample_lab[i]):
-                out_sample_lab[i] = self.ave_lab[i]
-            if out_sample_lab[i] == 0:
-                out_sample_lab[i] = self.ave_lab[i]
+                out_sample_lab[i] = 0
 
         return out_sample_lab
 
@@ -1102,6 +1101,23 @@ class knn_cl():
 
                     index_neg = index_neg + 1
             """
+
+    def get_k_means_test(self):
+        """
+        get different sub-group patients
+        """
+        self.length_test = len(self.test_data)
+
+        self.test_matrix = np.zeros((self.length_test, self.lab_size + self.item_size))
+
+        for i in range(self.length_test):
+            central_node = self.test_data[i]
+            patient_input = self.compute_average_patient(central_node)
+            self.test_matrix[i, :] = patient_input[0:8]
+
+        self.kmeans_test = KMeans(n_clusters=4,random_state=0).fit(self.test_matrix)
+
+
 
     def construct_knn_graph_attribute(self):
         """
