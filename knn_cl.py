@@ -653,7 +653,7 @@ class knn_cl():
                 ave_value = np.mean(
                     [np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_vital'][str(j)][i]])
                 index = self.kg.dic_vital[i]['index']
-                self.ave_item[i] = mean
+                self.ave_item[index] = mean
                 if std == 0:
                     self.one_sample[index] += 0
                     #self.freq_sample[index] += 1
@@ -715,7 +715,7 @@ class knn_cl():
                 std = np.float(self.kg.dic_lab[i]['std'])
                 ave_value = np.mean([np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i]])
                 index = self.kg.dic_lab[i]['index']
-                self.ave_lab[i] = mean
+                self.ave_lab[index] = mean
                 if std == 0:
                     self.one_sample_lab[index] += 0
                     #self.freq_sample_lab[index] += 1
