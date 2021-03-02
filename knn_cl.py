@@ -59,7 +59,7 @@ class knn_cl():
         random_pick_death = list(np.array(self.train_data)[0:2000])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
-        self.train_data = reduced_data
+        #self.train_data = reduced_data
         self.test_data_1 = self.test_data[0:1000]
         self.test_data_2 = self.test_data[1000:1713]
         #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
@@ -1547,7 +1547,7 @@ class knn_cl():
                     self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
                         self.batch_size, i * self.batch_size, self.train_data)
 
-                    self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_ce],
+                    self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
                                               feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                          self.input_x_lab: self.train_one_batch_lab,
                                                          self.input_x_demo: self.train_one_batch_demo,
@@ -1561,7 +1561,7 @@ class knn_cl():
                     self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train(
                         self.batch_size, i * self.batch_size, self.train_data)
 
-                    self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_ce],
+                    self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
                                               feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                          self.input_x_lab: self.train_one_batch_lab,
                                                          self.input_x_demo: self.train_one_batch_demo,
