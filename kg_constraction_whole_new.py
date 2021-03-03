@@ -560,7 +560,7 @@ class Kg_construct_ehr():
 
     def get_lab(self):
         self.dic_lab_count = {}
-        for i in self.dic_lab.keys:
+        for i in self.dic_lab.keys():
             self.dic_lab_count[i]=0
         for i in self.dic_patient.keys():
             m = []
