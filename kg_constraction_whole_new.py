@@ -558,6 +558,21 @@ class Kg_construct_ehr():
             age = self.dic_demographic[i]['Age']
             self.age_list.append(age)
 
+    def get_lab(self):
+        self.dic_lab_count = {}
+        for i in self.dic_lab.keys:
+            self.dic_lab_count[i]=0
+        for i in self.dic_patient.keys():
+            m = []
+            for j in self.dic_patient[i]['prior_time_lab'].keys():
+                m += list(dic_patient[i]['prior_time_lab'][j].keys())
+            for k in self.dic_lab.keys():
+                if k in m:
+                    self.dic_lab_count[k] += 1
+
+
+
+
 
 
 
@@ -594,6 +609,7 @@ if __name__ == "__main__":
         std = np.std(values)
         kg.dic_vital[i]['mean_value'] = mean
         kg.dic_vital[i]['std'] = std
+
 
 
     kg.dic_death = {}
