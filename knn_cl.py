@@ -1148,7 +1148,7 @@ class knn_cl():
         #self.knn_sim_matrix = self.knn_sim_matrix / self.norm_knn
         #self.knn_sim_score_matrix = np.matmul(self.knn_sim_matrix[:,0:8], self.knn_sim_matrix[:,0:8].T)
         self.knn_nbrs = NearestNeighbors(n_neighbors=self.length_train,algorithm='ball_tree').fit(self.knn_sim_matrix[:,self.kg.list_index])
-        distance,indices = self.knn_nbrs.kneighbors(self.knn_sim_matrix[:,self.kg_list_index])
+        distance,indices = self.knn_nbrs.kneighbors(self.knn_sim_matrix[:,self.kg.list_index])
         for i in range(self.length_train):
             # print(i)
             #vec = np.argsort(self.knn_sim_score_matrix[i, :])
