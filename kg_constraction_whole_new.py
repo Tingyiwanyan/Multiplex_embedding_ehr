@@ -754,6 +754,7 @@ if __name__ == "__main__":
     kg.list_index = [ 0,  1,  2,  4,  6,  9, 10, 12, 15, 19, 20, 23, 24, 26, 27, 30, 33,
        35, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 62, 65, 66, 67, 68, 75]
     kg.list_index = list(np.array(kg.list_index)+8)
+    kg.remove_out_lier()
 
     """
     Demographic table stat
