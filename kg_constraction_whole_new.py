@@ -562,7 +562,7 @@ class Kg_construct_ehr():
         self.dic_lab_count = {}
         for i in self.dic_lab.keys():
             self.dic_lab_count[i]=0
-        for i in self.dic_patient.keys():
+        for i in self.total_data_mortality:
             m = []
             for j in self.dic_patient[i]['prior_time_lab'].keys():
                 m += list(self.dic_patient[i]['prior_time_lab'][j].keys())
