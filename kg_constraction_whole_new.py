@@ -565,7 +565,7 @@ class Kg_construct_ehr():
         for i in self.dic_patient.keys():
             m = []
             for j in self.dic_patient[i]['prior_time_lab'].keys():
-                m += list(dic_patient[i]['prior_time_lab'][j].keys())
+                m += list(self.dic_patient[i]['prior_time_lab'][j].keys())
             for k in self.dic_lab.keys():
                 if k in m:
                     self.dic_lab_count[k] += 1
