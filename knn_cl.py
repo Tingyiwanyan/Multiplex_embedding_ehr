@@ -1124,7 +1124,7 @@ class knn_cl():
             patient_input = self.compute_average_patient(central_node)
             self.test_matrix[i, :] = patient_input
 
-        self.kmeans_test = KMeans(n_clusters=4,random_state=0).fit(self.test_matrix[:,0:8])
+        self.kmeans_test = KMeans(n_clusters=4,random_state=0).fit(self.test_matrix[:,self.kg.list_index])
 
 
 
