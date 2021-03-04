@@ -724,7 +724,7 @@ class knn_cl():
                     continue
                 mean = np.float(self.kg.dic_lab[i]['mean_value'])
                 std = np.float(self.kg.dic_lab[i]['std'])
-                in_lier = np.where(np.array(self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i])<mean+std)[0]
+                in_lier = np.where(np.array(self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i])<mean+3*std)[0]
                 in_lier_value = list(np.array(self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i])[in_lier])
                 if in_lier_value == []:
                     ave_value = mean
