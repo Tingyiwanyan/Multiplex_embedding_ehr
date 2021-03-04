@@ -670,7 +670,7 @@ class knn_cl():
                     self.one_sample[index] += 0
                     #self.freq_sample[index] += 1
                 else:
-                    self.one_sample[index] = np.float(ave_value) - mean / std
+                    self.one_sample[index] = np.float(ave_value) - mean / 3*std
                     self.freq_sample[index] += 1
 
         out_sample = self.one_sample / self.freq_sample
@@ -738,7 +738,7 @@ class knn_cl():
                     self.one_sample_lab[index] += 0
                     #self.freq_sample_lab[index] += 1
                 else:
-                    self.one_sample_lab[index] += np.float(ave_value) - mean / std
+                    self.one_sample_lab[index] += np.float(ave_value) - mean / 3*std
                     self.freq_sample_lab[index] += 1
 
         out_sample_lab = self.one_sample_lab / self.freq_sample_lab
