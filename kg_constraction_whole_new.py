@@ -572,7 +572,7 @@ class Kg_construct_ehr():
 
     def remove_out_lier(self):
         for i in self.dic_lab.keys():
-            in_lier = np.where(np.array(self.dic_lab[i]['lab_value_patient']<self.dic_lab[i]['mean_value']+kg.dic_lab[i]['std']))
+            in_lier = np.where(np.array(self.dic_lab[i]['lab_value_patient']<self.dic_lab[i]['mean_value']+2*kg.dic_lab[i]['std']))
             self.dic_lab[i]['lab_value_patient'] = list(np.array(self.dic_lab[i]['lab_value_patient'])[in_lier])
             self.dic_lab[i]['mean_value'] = np.mean(self.dic_lab[i]['lab_value_patient'])
             self.dic_lab[i]['std'] = np.mean(self.dic_lab[i]['lab_value_patient'])
