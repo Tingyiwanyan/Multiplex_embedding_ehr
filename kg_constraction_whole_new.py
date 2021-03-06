@@ -572,7 +572,7 @@ class Kg_construct_ehr():
 
     def remove_out_lier(self):
         for i in self.dic_lab.keys():
-            in_lier = np.where(np.array(self.dic_lab[i]['lab_value_patient']<self.dic_lab[i]['mean_value']+3*kg.dic_lab[i]['std']))
+            in_lier = np.where(np.array(self.dic_lab[i]['lab_value_patient']<self.dic_lab[i]['mean_value']+kg.dic_lab[i]['std']))
             self.dic_lab[i]['lab_value_patient'] = list(np.array(self.dic_lab[i]['lab_value_patient'])[in_lier])
             self.dic_lab[i]['mean_value'] = np.mean(self.dic_lab[i]['lab_value_patient'])
             self.dic_lab[i]['std'] = np.mean(self.dic_lab[i]['lab_value_patient'])
@@ -754,7 +754,7 @@ if __name__ == "__main__":
     kg.list_index = [ 0,  1,  2,  4,  6,  9, 10, 12, 15, 19, 20, 23, 24, 26, 27, 30, 33,
        35, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 62, 65, 66, 67, 68, 75]
     kg.list_index = list(np.array(kg.list_index)+8)
-    kg.remove_out_lier()
+    #kg.remove_out_lier()
 
     """
     Demographic table stat

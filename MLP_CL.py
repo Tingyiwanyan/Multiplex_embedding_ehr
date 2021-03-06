@@ -21,13 +21,17 @@ class NN_model():
         self.length_train = len(self.train_data)
         self.length_train_hadm = len(data_process.train_hadm_id)
         self.batch_size = 16
-        self.latent_dim = 500
+        self.latent_dim = 100
         self.epoch = 6
         self.resolution = 0.0001
         self.threshold_diag = 0.06
-        self.item_size = len(list(kg.dic_item.keys()))
-        self.diagnosis_size = len(list(kg.dic_diag))
-        self.patient_size = len(list(kg.dic_patient))
+        #self.item_size = len(list(kg.dic_item.keys()))
+        #self.diagnosis_size = len(list(kg.dic_diag))
+        #self.patient_size = len(list(kg.dic_patient))
+        self.item_size = len(list(kg.dic_vital.keys()))
+        self.demo_size = len(list(kg.dic_race.keys()))
+        self.lab_size = len(list(kg.dic_lab.keys()))
+        self.input_size = self.item_size+self.demo_size+self.lab_size
         self.input_seq = []
         """
         define shallow neural network
@@ -86,6 +90,136 @@ class NN_model():
 
         self.negative_sum_contrast = tf.math.negative(
             tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
+
+    def assign_value_vital(self, patientid):
+        self.one_sample = np.zeros(self.item_size)
+        self.times = []
+        for j in self.kg.dic_patient[patientid]['prior_time_vital'].keys():
+            for i in self.kg.dic_patient[patientid]['prior_time_vital'][str(j)].keys():
+                mean = np.float(self.kg.dic_vital[i]['mean_value'])
+                std = np.float(self.kg.dic_vital[i]['std'])
+                ave_value = np.mean(
+                    [np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_vital'][str(j)][i]])
+                index = self.kg.dic_vital[i]['index']
+                #self.ave_item[index] = mean
+                if std == 0:
+                    self.one_sample[index] += 0
+                    #self.freq_sample[index] += 1
+                else:
+                    if ave_value > mean+std:
+                        self.one_sample[index] = 1
+                    elif ave_value < mean-std:
+                        self.one_sample[index] = 0
+                    else:
+                        self.one_sample[index] = (np.float(ave_value)-mean)
+
+                    self.one_sample[index] = np.float(ave_value) - mean / 3*std
+                    self.freq_sample[index] += 1
+
+        out_sample = self.one_sample / self.freq_sample
+        for i in range(self.item_size):
+            if math.isnan(out_sample[i]):
+                out_sample[i] = 0
+
+        return out_sample
+
+    def assign_value_icu_intubation(self,patientid,start_time,end_time):
+        one_sample_icu_intubation = np.zeros(2)
+        if self.kg.dic_patient[patientid]['icu_label'] == 1:
+            icu_hour = self.kg.dic_patient[patientid]['in_icu_hour']
+            if icu_hour > start_time:
+                one_sample_icu_intubation[0] = 1
+        if self.kg.dic_patient[patientid]['intubation_label'] == 1:
+            intubation_hour = self.kg.dic_patient[patientid]['intubation_hour']
+            if intubation_hour > start_time and intubation_hour < end_time:
+                one_sample_icu_intubation[1] = 1
+            if intubation_hour < start_time:
+                if self.kg.dic_patient[patientid]['extubation_label'] == 1:
+                    extubation_hour = self.kg.dic_patient[patientid]['extubation_hour']
+                    if extubation_hour > start_time:
+                        one_sample_icu_intubation[1] = 1
+                if self.kg.dic_patient[patientid]['extubation_label'] == 0:
+                    one_sample_icu_intubation[1] = 1
+
+        return one_sample_icu_intubation
+
+
+
+    def assign_value_lab(self, patientid, start_time, end_time):
+        self.one_sample_lab = np.zeros(self.lab_size)
+        self.freq_sample_lab = np.zeros(self.lab_size)
+        #self.ave_lab = np.zeros(self.lab_size)
+        self.times_lab = []
+        for i in self.kg.dic_patient[patientid]['prior_time_lab'].keys():
+            if (np.int(i) > start_time or np.int(i) == start_time) and np.int(i) < end_time:
+                self.times_lab.append(i)
+        for j in self.times_lab:
+            for i in self.kg.dic_patient[patientid]['prior_time_lab'][str(j)].keys():
+                if i[-1] == 'A':
+                    continue
+                if i == "EOSINO":
+                    continue
+                if i == "EOSINO_PERC":
+                    continue
+                if i == "BASOPHIL":
+                    continue
+                if i == "BASOPHIL_PERC":
+                    continue
+                mean = np.float(self.kg.dic_lab[i]['mean_value'])
+                std = np.float(self.kg.dic_lab[i]['std'])
+                in_lier = np.where(np.array(self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i])<mean+3*std)[0]
+                in_lier_value = list(np.array(self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i])[in_lier])
+                if in_lier_value == []:
+                    ave_value = mean
+                else:
+                    #ave_value = np.mean([np.float(k) for k in self.kg.dic_patient[patientid]['prior_time_lab'][str(j)][i]])
+                    ave_value = np.mean(
+                        [np.float(k) for k in in_lier_value])
+                index = self.kg.dic_lab[i]['index']
+                #self.ave_lab[index] = mean
+                if std == 0:
+                    self.one_sample_lab[index] += 0
+                    #self.freq_sample_lab[index] += 1
+                else:
+                    self.one_sample_lab[index] += np.float(ave_value) - mean / 3*std
+                    self.freq_sample_lab[index] += 1
+
+        out_sample_lab = self.one_sample_lab / self.freq_sample_lab
+        for i in range(self.lab_size):
+            if math.isnan(out_sample_lab[i]):
+                out_sample_lab[i] = 0
+
+        return out_sample_lab
+
+    def assign_value_demo(self, patientid):
+        one_sample = np.zeros(self.demo_size)
+        for i in self.kg.dic_demographic[patientid]['race']:
+            if i == 'race':
+                race = self.kg.dic_demographic[patientid]['race']
+                index = self.kg.dic_race[race]['index']
+                one_sample[index] = 1
+            elif i == 'Age':
+                age = self.kg.dic_demographic[patientid]['Age']
+                index = self.kg.dic_race['Age']['index']
+                if age == 0:
+                    one_sample[index] = age
+                else:
+                    one_sample[index] = (np.float(age) - self.kg.age_mean) / self.kg.age_std
+            elif i == 'gender':
+                gender = self.kg.dic_demographic[patientid]['gender']
+                index = self.kg.dic_race[gender]['index']
+                one_sample[index] = 1
+
+        return one_sample
+
+    def assign_value_com(self, patientid):
+        one_sample = np.zeros(self.com_size)
+        self.com_index = np.where(self.kg.com_mapping_ar[:, 0] == patientid)[0][0]
+        deidentify_index = self.kg.com_mapping_ar[self.com_index][1]
+        self.map_index = np.where(deidentify_index == self.kg.com_ar[:, 1])[0][0]
+        one_sample[:] = [np.int(i) for i in self.kg.com_ar[self.map_index, 4:]]
+
+        return one_sample
 
     def config_model(self):
         self.lstm_cell()
