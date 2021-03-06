@@ -147,8 +147,6 @@ class NN_model():
 
     def assign_value_lab(self, patientid, start_time, end_time):
         self.one_sample_lab = np.zeros(self.lab_size)
-        self.freq_sample_lab = np.zeros(self.lab_size)
-        #self.ave_lab = np.zeros(self.lab_size)
         self.times_lab = []
         for i in self.kg.dic_patient[patientid]['prior_time_lab'].keys():
             if (np.int(i) > start_time or np.int(i) == start_time) and np.int(i) < end_time:
