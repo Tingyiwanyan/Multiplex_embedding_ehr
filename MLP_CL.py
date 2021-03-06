@@ -19,7 +19,6 @@ class NN_model():
         self.train_data = self.data_process.train_patient
         self.test_data = self.data_process.test_patient
         self.length_train = len(self.train_data)
-        self.length_train_hadm = len(data_process.train_hadm_id)
         self.batch_size = 16
         self.latent_dim = 100
         self.epoch = 6
