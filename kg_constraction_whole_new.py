@@ -11,6 +11,7 @@ from Dynamic_hgm_death_whole import dynamic_hgm
 from Muti_construction import Multiplex_network
 from Contrastive_regular import con_regular
 from knn_cl import knn_cl
+from MLP_CL import NN_model
 #from MLP import MLP_model
 
 
