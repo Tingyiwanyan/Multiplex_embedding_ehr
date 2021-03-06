@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import random
 import math
 from itertools import groupby
-from evaluation import cal_auc
+#from evaluation import cal_auc
 
 
 
