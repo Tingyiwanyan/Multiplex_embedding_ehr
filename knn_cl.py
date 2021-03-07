@@ -59,7 +59,7 @@ class knn_cl():
         random_pick_death = list(np.array(self.train_data)[0:2000])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
-        #self.train_data = reduced_data
+        self.train_data = reduced_data
         self.test_data_1 = self.test_data[0:1000]
         self.test_data_2 = self.test_data[1000:1713]
         #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
@@ -82,7 +82,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 1
+        self.positive_lab_size = 5
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -1084,6 +1084,12 @@ class knn_cl():
             self.test_matrix[i, :] = patient_input
 
         self.kmeans_test = KMeans(n_clusters=4,random_state=0).fit(self.test_matrix[:,self.kg.list_index])
+
+        self.test_group = []
+        for i in range(4):
+            index = np.where(self.kmeans_test.labels==i)[0]
+            test = [self.test_data[i] for i in index]
+            self.test_group.append(test)
 
 
 
