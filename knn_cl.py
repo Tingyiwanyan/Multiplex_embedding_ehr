@@ -33,6 +33,10 @@ class knn_cl():
         self.test_death_data = []
         self.train_non_death_data = []
         self.test_non_death_data = []
+        self.train_death_data_reduced = []
+        self.train_non_death_data_reduced = []
+        self.test_death_data_reduced = []
+        self.test_non_death_data_reduced = []
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
         self.lab_size = len(list(kg.dic_lab.keys()))
@@ -56,10 +60,24 @@ class knn_cl():
         for i in kg.dic_lab.keys():
             index = self.kg.dic_lab[i]['index']
             self.ave_lab[index] = self.kg.dic_lab[i]['mean_value']
-        random_pick_death = list(np.array(self.train_data)[0:3500])
+        random_pick_death = list(np.array(self.train_data)[0:1000])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
+        random_pick_death_test = list(np.array(self.test_death_data[0:300]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
+        reduced_data_test = [i for i in self.test_data if i not in random_pick_death_test]
         self.train_data = reduced_data
+        self.test_data = reduced_data_test
+        for i in self.kg.dic_patient.keys():
+            if self.kg.dic_patient[i]['death_flag'] == 1:
+                if i in self.train_data:
+                    self.train_death_data_reduced.append(i)
+                if i in self.test_data:
+                    self.test_death_data_reduced.append(i)
+            else:
+                if i in self.train_data:
+                    self.train_non_death_data_reduced.append(i)
+                if i in self.test_data:
+                    self.test_non_death_data_reduced.append(i)
         self.test_data_1 = self.test_data[0:1000]
         self.test_data_2 = self.test_data[1000:1713]
         #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
@@ -418,10 +436,10 @@ class knn_cl():
         self.positive_patient_id_list = []
         if self.kg.dic_patient[center_node_index]['death_flag'] == 0:
             flag = 0
-            neighbor_patient = self.kg.dic_death[0]
+            neighbor_patient = self.train_non_death_data_reduced
         else:
             flag = 1
-            neighbor_patient = self.kg.dic_death[1]
+            neighbor_patient = self.train_death_data_reduced
         time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
         time_seq_int = [np.int(k) for k in time_seq]
         time_seq_int.sort()
