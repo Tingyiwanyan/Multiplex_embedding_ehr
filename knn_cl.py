@@ -82,7 +82,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 1
+        self.positive_lab_size = 5
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -543,40 +543,6 @@ class knn_cl():
             index += 1
     """
 
-    def SGNN_loss(self):
-        """
-        implement sgnn loss
-        """
-        negative_training_norm = tf.math.l2_normalize(self.x_negative, axis=2)
-
-        skip_training = tf.broadcast_to(self.x_origin,
-                                        [self.batch_size, 1,#self.negative_sample_size,
-                                         self.latent_dim + self.latent_dim_demo])
-
-        skip_training_norm = tf.math.l2_normalize(skip_training, axis=2)
-
-        dot_prod = tf.multiply(skip_training_norm, negative_training_norm)
-
-        dot_prod_sum = tf.reduce_sum(dot_prod, 2)
-
-        sum_log_dot_prod = tf.math.log(tf.math.sigmoid(tf.math.negative(tf.reduce_mean(dot_prod_sum, 1))))
-
-        positive_training = tf.broadcast_to(self.x_origin, [self.batch_size, 1,#self.positive_sample_size,
-                                                            self.latent_dim + self.latent_dim_demo])
-
-        positive_skip_norm = tf.math.l2_normalize(self.x_skip, axis=2)
-
-        positive_training_norm = tf.math.l2_normalize(positive_training, axis=2)
-
-        dot_prod_positive = tf.multiply(positive_skip_norm, positive_training_norm)
-
-        dot_prod_sum_positive = tf.reduce_sum(dot_prod_positive, 2)
-
-        sum_log_dot_prod_positive = tf.math.log(tf.math.sigmoid(tf.reduce_mean(dot_prod_sum_positive, 1)))
-
-        self.negative_sum = tf.math.negative(
-            tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
-
     def contrastive_loss(self):
         """
         Implement Contrastive Loss
@@ -611,48 +577,12 @@ class knn_cl():
         self.normalized_prob = tf.math.divide(self.positive_dot_prod_sum,self.denominator_normalizer)
         self.log_normalized_prob = tf.math.negative(tf.reduce_mean(tf.math.log(self.normalized_prob),0))
 
-    def SGNN_loss_contrast(self):
-        """
-        mplement sgnn loss contrast
-        """
-        negative_training_norm = tf.math.l2_normalize(self.x_negative_contrast, axis=2)
-
-        skip_training = tf.broadcast_to(self.x_origin,
-                                        [self.batch_size, self.negative_sample_size,
-                                         self.latent_dim + self.latent_dim_demo])
-
-        skip_training_norm = tf.math.l2_normalize(skip_training, axis=2)
-
-        dot_prod = tf.multiply(skip_training_norm, negative_training_norm)
-
-        dot_prod_sum = tf.reduce_sum(dot_prod, 2)
-
-        sum_log_dot_prod = tf.math.log(tf.math.sigmoid(tf.math.negative(tf.reduce_mean(dot_prod_sum, 1))))
-
-        positive_training = tf.broadcast_to(self.x_origin, [self.batch_size, self.positive_sample_size,
-                                                            self.latent_dim + self.latent_dim_demo])
-
-        positive_skip_norm = tf.math.l2_normalize(self.x_skip_contrast, axis=2)
-
-        positive_training_norm = tf.math.l2_normalize(positive_training, axis=2)
-
-        dot_prod_positive = tf.multiply(positive_skip_norm, positive_training_norm)
-
-        dot_prod_sum_positive = tf.reduce_sum(dot_prod_positive, 2)
-
-        sum_log_dot_prod_positive = tf.math.log(tf.math.sigmoid(tf.reduce_mean(dot_prod_sum_positive, 1)))
-
-        self.negative_sum_contrast = tf.math.negative(
-            tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
-
     def config_model(self):
         self.lstm_cell()
         self.demo_layer()
         # self.softmax_loss()
         self.build_dhgm_model()
         self.get_latent_rep_hetero()
-        self.SGNN_loss()
-        self.SGNN_loss_contrast()
         self.contrastive_loss()
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
         #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
