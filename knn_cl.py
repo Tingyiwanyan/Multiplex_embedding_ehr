@@ -97,6 +97,8 @@ class knn_cl():
         self.neighbor_pick_neg = 1
         self.neighbor_death = len(kg.dic_death[1])
         self.neighbor_discharge = len(kg.dic_death[0])
+
+        self.input_size = self.latent_dim + self.latent_dim_demo
         """
         define LSTM variables
         """
