@@ -82,11 +82,11 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 5
+        self.positive_lab_size = 1
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
-        self.negative_lab_size = self.batch_size+self.positive_lab_size#self.batch_size-1
+        self.negative_lab_size = self.positive_lab_size#self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
         self.positive_sample_size = self.positive_lab_size# + 1
@@ -484,8 +484,8 @@ class knn_cl():
                 # time_index += 1
 
     def get_negative_patient(self, center_node_index):
-        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size-self.positive_lab_size, self.item_size))
-        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size-self.positive_lab_size, self.lab_size))
+        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
+        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
         self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence,self.negative_lab_size,2))
         self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
         self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
@@ -495,7 +495,7 @@ class knn_cl():
         else:
             neighbor_patient = self.kg.dic_death[0]
             flag = 0
-        for i in range(self.negative_lab_size-self.positive_lab_size):
+        for i in range(self.negative_lab_size):
             index_neighbor = np.int(np.floor(np.random.uniform(0, len(neighbor_patient), 1)))
             patient_id = neighbor_patient[index_neighbor]
             time_seq = self.kg.dic_patient[patient_id]['prior_time_vital'].keys()
@@ -528,8 +528,8 @@ class knn_cl():
                 self.patient_neg_sample_lab[j, i, :] = one_data_lab
                 #self.patient_neg_sample_icu_intubation_label[j,i,:] = one_data_icu_label
                 # time_index += 1
-        self.patient_neg_sample_lab = np.concatenate([self.patient_neg_sample_lab,self.patient_pos_sample_lab[:,1:,:]],1)
-        self.patient_neg_sample_vital = np.concatenate([self.patient_neg_sample_vital,self.patient_pos_sample_vital[:,1:,:]],1)
+        #self.patient_neg_sample_lab = np.concatenate([self.patient_neg_sample_lab,self.patient_pos_sample_lab[:,1:,:]],1)
+        #self.patient_neg_sample_vital = np.concatenate([self.patient_neg_sample_vital,self.patient_pos_sample_vital[:,1:,:]],1)
 
     """
     def get_negative_sample_rep(self):
@@ -574,6 +574,40 @@ class knn_cl():
 
         self.negative_sum = tf.math.negative(
             tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
+
+    def contrastive_loss(self):
+        """
+        Implement Contrastive Loss
+        """
+        """
+        positive inner product
+        """
+        self.positive_broad = tf.broadcast_to(self.x_origin,
+                                              [self.batch_size,self.positive_sample_size,self.input_size])
+        self.negative_broad = tf.broadcast_to(self.x_origin,
+                                              [self.batch_size,self.negative_sample_size,self.input_size])
+
+        self.positive_broad_norm = tf.math.l2_normalize(self.positive_broad,axis=2)
+        self.positive_sample_norm = tf.math.l2_normalize(self.x_skip_contrast,axis=2)
+
+        self.positive_dot_prod = tf.multiply(self.positive_broad_norm,self.positive_sample_norm)
+        self.positive_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2)),1)
+
+        """
+        negative inner product
+        """
+        self.negative_broad_norm = tf.math.l2_normalize(self.negative_broad,axis=2)
+        self.negative_sample_norm = tf.math.l2_normalize(self.x_negative_contrast,axis=2)
+
+        self.negative_dot_prod = tf.multiply(self.negative_broad_norm,self.negative_sample_norm)
+        self.negative_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.negative_dot_prod,2)),1)
+
+        """
+        Compute normalized probability and take log form
+        """
+        self.denominator_normalizer = tf.math.add(self.positive_dot_prod_sum,self.negative_dot_prod_sum)
+        self.normalized_prob = tf.math.divide(self.positive_dot_prod_sum,self.denominator_normalizer)
+        self.log_normalized_prob = tf.math.negative(tf.reduce_mean(tf.math.log(self.normalized_prob),0))
 
     def SGNN_loss_contrast(self):
         """
@@ -629,7 +663,7 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.2*self.negative_sum_contrast)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.2*self.log_normalized_prob)
         """
         focal loss
         """
@@ -644,7 +678,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.focal_loss + 0.2 * self.negative_sum_contrast)
+            self.focal_loss + 0.2 * self.log_normalized_prob)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()

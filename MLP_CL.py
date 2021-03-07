@@ -24,9 +24,6 @@ class NN_model():
         self.epoch = 6
         self.resolution = 0.0001
         self.threshold_diag = 0.06
-        #self.item_size = len(list(kg.dic_item.keys()))
-        #self.diagnosis_size = len(list(kg.dic_diag))
-        #self.patient_size = len(list(kg.dic_patient))
         self.item_size = len(list(kg.dic_vital.keys()))
         self.demo_size = len(list(kg.dic_race.keys()))
         self.lab_size = len(list(kg.dic_lab.keys()))
@@ -40,8 +37,9 @@ class NN_model():
         self.input_x = tf.placeholder(tf.float32, [None, self.input_size])
         self.input_x_positive = tf.placeholder(tf.float32,[None,self.positive_sample_size,self.input_size])
         self.input_x_negative = tf.placeholder(tf.float32,[None,self.negative_sample_size,self.input_size])
+        self.input_y_logit = tf.keras.backend.placeholder([None, 1])
 
-    def softmax_loss(self):
+    def embed_layer(self):
         """
         Implement softmax loss layer
         """
@@ -49,15 +47,6 @@ class NN_model():
                                           units=self.latent_dim,
                                           kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                           activation=tf.nn.relu)
-        self.batch_normed = tf.keras.layers.BatchNormalization()
-        self.hidden_batch_normed = self.batch_normed(self.hidden_rep)
-        self.output_layer = tf.layers.dense(inputs=self.hidden_rep,
-                                           units=self.diagnosis_size,
-                                           kernel_initializer=tf.keras.initializers.he_normal(seed=None),
-                                           activation=tf.nn.elu)
-        self.logit_softmax = tf.nn.softmax(self.output_layer)
-        self.cross_entropy = tf.reduce_mean(tf.math.negative(
-            tf.reduce_sum(tf.math.multiply(self.input_y_diag, tf.log(self.logit_softmax)), reduction_indices=[1])))
 
     def contrastive_loss(self):
         """
@@ -66,16 +55,16 @@ class NN_model():
         """
         positive inner product
         """
-        self.positive_broad = tf.broadcast_to(self.input_x,
+        self.positive_broad = tf.broadcast_to(self.hidden_rep,
                                               [self.batch_size,self.positive_sample_size,self.input_size])
-        self.negative_broad = tf.broadcast_to(self.input_x,
+        self.negative_broad = tf.broadcast_to(self.hidden_rep,
                                               [self.batch_size,self.negative_sample_size,self.input_size])
 
         self.positive_broad_norm = tf.math.l2_normalize(self.positive_broad,axis=2)
         self.positive_sample_norm = tf.math.l2_normalize(self.input_x_positive,axis=2)
 
         self.positive_dot_prod = tf.multiply(self.positive_broad_norm,self.positive_sample_norm)
-        self.positive_dot_prod_sum = tf.reduce_sum(tf.reduce_sum(self.positive_dot_prod, 2),1)
+        self.positive_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2)),1)
 
         """
         negative inner product
@@ -84,50 +73,48 @@ class NN_model():
         self.negative_sample_norm = tf.math.l2_normalize(self.input_x_negative,axis=2)
 
         self.negative_dot_prod = tf.multiply(self.negative_broad_norm,self.negative_sample_norm)
-        self.negative_dot_prod_sum = tf.reduce_sum(tf.reduce_sum(self.negative_dot_prod,2),1)
+        self.negative_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.negative_dot_prod,2)),1)
 
         """
         Compute normalized probability and take log form
         """
         self.denominator_normalizer = tf.math.add(self.positive_dot_prod_sum,self.negative_dot_prod_sum)
         self.normalized_prob = tf.math.divide(self.positive_dot_prod_sum,self.denominator_normalizer)
-        self.log_normalized_prob = tf.math.negative(tf.math.log(self.normalized_prob))
+        self.log_normalized_prob = tf.math.negative(tf.reduce_mean(tf.math.log(self.normalized_prob),0))
 
-
-
-    def SGNN_loss_contrast(self):
+    def config_model(self):
+        self.embed_layer()
+        self.contrastive_loss()
+        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.log_normalized_prob)
+        self.logit_sig = tf.compat.v1.layers.dense(inputs=self.hidden_rep,
+                                                      units=1,
+                                                      kernel_initializer=tf.keras.initializers.he_normal(seed=None),
+                                                      activation=tf.nn.sigmoid)
+        bce = tf.keras.losses.BinaryCrossentropy()
+        self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
+        self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
+            self.cross_entropy+0.2*self.log_normalized_prob)
         """
-        implement sgnn loss contrast
+        focal loss
         """
-        negative_training_norm = tf.math.l2_normalize(self.x_negative_contrast, axis=2)
+        alpha = 0.25
 
-        skip_training = tf.broadcast_to(self.x_origin,
-                                        [self.batch_size, self.negative_sample_size,
-                                         self.latent_dim + self.latent_dim_demo])
+        alpha_t = self.input_y_logit * alpha + (tf.ones_like(self.input_y_logit) - self.input_y_logit) * (1 - alpha)
 
-        skip_training_norm = tf.math.l2_normalize(skip_training, axis=2)
+        p_t = self.input_y_logit * self.logit_sig + \
+              (tf.ones_like(self.input_y_logit) -
+               self.input_y_logit) * (tf.ones_like(self.input_y_logit) - self.logit_sig) + tf.keras.backend.epsilon()
 
-        dot_prod = tf.multiply(skip_training_norm, negative_training_norm)
-
-        dot_prod_sum = tf.reduce_sum(dot_prod, 2)
-
-        sum_log_dot_prod = tf.math.log(tf.math.sigmoid(tf.math.negative(tf.reduce_mean(dot_prod_sum, 1))))
-
-        positive_training = tf.broadcast_to(self.x_origin, [self.batch_size, self.positive_sample_size,
-                                                            self.latent_dim + self.latent_dim_demo])
-
-        positive_skip_norm = tf.math.l2_normalize(self.x_skip_contrast, axis=2)
-
-        positive_training_norm = tf.math.l2_normalize(positive_training, axis=2)
-
-        dot_prod_positive = tf.multiply(positive_skip_norm, positive_training_norm)
-
-        dot_prod_sum_positive = tf.reduce_sum(dot_prod_positive, 2)
-
-        sum_log_dot_prod_positive = tf.math.log(tf.math.sigmoid(tf.reduce_mean(dot_prod_sum_positive, 1)))
-
-        self.negative_sum_contrast = tf.math.negative(
-            tf.reduce_sum(tf.math.add(sum_log_dot_prod, sum_log_dot_prod_positive)))
+        self.focal_loss_ = - alpha_t * tf.math.pow((tf.ones_like(self.input_y_logit) - p_t),
+                                                   self.gamma) * tf.math.log(p_t)
+        self.focal_loss = tf.reduce_mean(self.focal_loss_)
+        self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
+        self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
+            self.focal_loss + 0.2 * self.log_normalized_prob)
+        self.sess = tf.InteractiveSession()
+        tf.global_variables_initializer().run()
+        tf.local_variables_initializer().run()
 
 
     def get_batch_train(self, start_index):
@@ -135,9 +122,47 @@ class NN_model():
         get training batch data
         """
         train_one_batch_vital = np.zeros((data_length, self.item_size))
+        train_one_batch_vital_positive_samples = np.zeros((data_length,self.positive_sample_size,self.item_size))
+        train_one_batch_vital_negative_samples = np.zeros((data_length,self.negative_sample_size,self.item_size))
         train_one_batch_lab = np.zeros((data_length, self.lab_size))
+        train_one_batch_lab_positive_samples = np.zeros((data_length, self.positive_sample_size, self.lab_size))
+        train_one_batch_lab_negative_samples = np.zeros((data_length, self.negative_sample_size, self.lab_size))
         train_one_batch_demo = np.zeros((data_length, self.demo_size))
+        train_one_batch_demo_positive_samples = np.zeros((data_length, self.positive_sample_size, self.demo_size))
+        train_one_batch_demo_negative_samples = np.zeros((data_length, self.negative_sample_size, self.demo_size))
         self.real_logit = np.zeros((data_length, 1))
+
+        for i in range(data_length):
+            self.patient_id = data[start_index + i]
+            self.time_seq = self.kg.dic_patient[self.patient_id]['prior_time_vital'].keys()
+            self.time_seq_int = [np.int(k) for k in self.time_seq]
+            self.time_seq_int.sort()
+            time_index = 0
+            flag = self.kg.dic_patient[self.patient_id]['death_flag']
+            if flag == 0:
+                train_one_batch_mortality[i, 0, :] = [1, 0]
+                train_one_batch_mortality[i, 1, :] = [0, 1]
+                one_batch_logit[i, 0] = 1
+                self.real_logit[i,0] = 0
+            else:
+                train_one_batch_mortality[i, 0, :] = [0, 1]
+                train_one_batch_mortality[i, 1, :] = [1, 0]
+                one_batch_logit[i, 1] = 1
+                self.real_logit[i,0] = 1
+
+            self.get_positive_patient(self.patient_id)
+            self.get_negative_patient(self.patient_id)
+            train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
+                                                  axis=1)
+            train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
+            train_one_data_demo = np.concatenate((self.patient_pos_sample_demo, self.patient_neg_sample_demo), axis=0)
+            train_one_data_com = np.concatenate((self.patient_pos_sample_com, self.patient_neg_sample_com), axis=0)
+            train_one_data_icu_intubation = np.concatenate((self.patient_pos_sample_icu_intubation_label,self.patient_neg_sample_icu_intubation_label),axis=1)
+            train_one_batch_vital[i, :, :, :] = train_one_data_vital
+            train_one_batch_lab[i, :, :, :] = train_one_data_lab
+            train_one_batch_demo[i, :, :] = train_one_data_demo
+            train_one_batch_com[i, :, :] = train_one_data_com
+            train_one_batch_icu_intubation[i,:,:,:] = train_one_data_icu_intubation
 
 
     def get_batch_train_origin(self, data_length, start_index, data):
@@ -339,45 +364,3 @@ class NN_model():
         one_sample[:] = [np.int(i) for i in self.kg.com_ar[self.map_index, 4:]]
 
         return one_sample
-
-    def config_model(self):
-        self.lstm_cell()
-        self.demo_layer()
-        # self.softmax_loss()
-        self.build_dhgm_model()
-        self.get_latent_rep_hetero()
-        self.SGNN_loss()
-        self.SGNN_loss_contrast()
-        # self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
-        # self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
-        # self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
-        self.logit_sig = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
-                                                   units=1,
-                                                   kernel_initializer=tf.keras.initializers.he_normal(seed=None),
-                                                   activation=tf.nn.sigmoid)
-        # self.logit_sig = tf.nn.softmax(self.output_layer)
-        bce = tf.keras.losses.BinaryCrossentropy()
-        self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
-        self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.cross_entropy + 0.2 * self.negative_sum_contrast)
-        """
-        focal loss
-        """
-        alpha = 0.25
-        # self.focal_loss_ = -self.input_y_logit*tf.math.multiply((1-self.logit_sig)**self.gamma,tf.log(self.logit_sig))
-        # self.focal_loss = tf.math.reduce_mean(self.focal_loss_)
-        alpha_t = self.input_y_logit * alpha + (tf.ones_like(self.input_y_logit) - self.input_y_logit) * (1 - alpha)
-
-        p_t = self.input_y_logit * self.logit_sig + (tf.ones_like(self.input_y_logit) - self.input_y_logit) * (
-                    tf.ones_like(self.input_y_logit) - self.logit_sig) + tf.keras.backend.epsilon()
-
-        self.focal_loss_ = - alpha_t * tf.math.pow((tf.ones_like(self.input_y_logit) - p_t), self.gamma) * tf.math.log(p_t)
-        self.focal_loss = tf.reduce_mean(self.focal_loss_)
-        self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
-        self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.focal_loss + 0.2 * self.negative_sum_contrast)
-        self.sess = tf.InteractiveSession()
-        tf.global_variables_initializer().run()
-        tf.local_variables_initializer().run()
