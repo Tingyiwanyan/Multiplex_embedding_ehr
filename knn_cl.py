@@ -100,7 +100,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 5
+        self.positive_lab_size = 15
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -1101,10 +1101,10 @@ class knn_cl():
             patient_input = self.compute_average_patient(central_node)
             self.test_matrix[i, :] = patient_input
 
-        self.kmeans_test = KMeans(n_clusters=2,random_state=0).fit(self.test_matrix[:,self.kg.list_index])
+        self.kmeans_test = KMeans(n_clusters=3,random_state=0).fit(self.test_matrix[:,self.kg.list_index])
 
         self.test_group = []
-        for i in range(2):
+        for i in range(3):
             index = np.where(self.kmeans_test.labels_==i)[0]
             test = [self.test_data[i] for i in index]
             self.test_group.append(test)
