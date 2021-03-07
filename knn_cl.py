@@ -580,19 +580,13 @@ class knn_cl():
     def config_model(self):
         self.lstm_cell()
         self.demo_layer()
-        # self.softmax_loss()
         self.build_dhgm_model()
         self.get_latent_rep_hetero()
         self.contrastive_loss()
-        #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum)
-        #self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(0.8*self.negative_sum+0.2*self.negative_sum_contrast)
-         #self.train_step_cross_entropy = tf.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_neg = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.negative_sum_contrast)
         self.logit_sig = tf.compat.v1.layers.dense(inputs=self.x_origin_ce,
                                                       units=1,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                       activation=tf.nn.sigmoid)
-        #self.logit_sig = tf.nn.softmax(self.output_layer)
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
@@ -601,8 +595,6 @@ class knn_cl():
         focal loss
         """
         alpha = 0.25
-        #self.focal_loss_ = -self.input_y_logit*tf.math.multiply((1-self.logit_sig)**self.gamma,tf.log(self.logit_sig))
-        #self.focal_loss = tf.math.reduce_mean(self.focal_loss_)
         alpha_t = self.input_y_logit * alpha + (tf.ones_like(self.input_y_logit) - self.input_y_logit) * (1 - alpha)
 
         p_t = self.input_y_logit * self.logit_sig + (tf.ones_like(self.input_y_logit) - self.input_y_logit) * (tf.ones_like(self.input_y_logit) - self.logit_sig) + tf.keras.backend.epsilon()
