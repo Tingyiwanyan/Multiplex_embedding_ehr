@@ -68,7 +68,7 @@ class knn_cl():
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
-        self.batch_size = 24
+        self.batch_size = 16
         self.time_sequence = 4
         self.time_step_length = 6
         self.predict_window_prior = self.time_sequence * self.time_step_length
@@ -603,7 +603,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.focal_loss + 0.2 * self.log_normalized_prob)
+            self.focal_loss + 0.4 * self.log_normalized_prob)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
