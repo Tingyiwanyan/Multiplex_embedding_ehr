@@ -93,7 +93,7 @@ class knn_cl():
         self.latent_dim_cell_state = 100
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
-        self.epoch = 1
+        self.epoch = 4
         self.epoch_representation = 1
         self.latent_dim = self.item_size + self.lab_size
         self.com_size = 12
@@ -1440,6 +1440,28 @@ class knn_cl():
                 print(self.err_[0])
 
 
+    def train_ce(self):
+        self.length_train = len(self.train_data)
+        init_hidden_state = np.zeros(
+            (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
+        iteration = np.int(np.floor(np.float(self.length_train) / self.batch_size))
+
+        for i in range(iteration):
+            self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+                self.batch_size, i * self.batch_size, self.train_data)
+
+            self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
+                                      feed_dict={self.input_x_vital: self.train_one_batch_vital,
+                                                 self.input_x_lab: self.train_one_batch_lab,
+                                                 self.input_x_demo: self.train_one_batch_demo,
+                                                 # self.input_x_com: self.one_batch_com,
+                                                 # self.lab_test: self.one_batch_item,
+                                                 self.input_y_logit: self.real_logit,
+                                                 self.mortality: self.one_batch_mortality,
+                                                 self.init_hiddenstate: init_hidden_state,
+                                                 self.input_icu_intubation: self.one_batch_icu_intubation})
+            print(self.err_[0])
+
     def train(self):
         """
         train the system
@@ -1460,7 +1482,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train_origin(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_cl],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
@@ -1505,7 +1527,7 @@ class knn_cl():
                 self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com,self.one_batch_icu_intubation = self.get_batch_train(
                     self.batch_size, i * self.batch_size, self.train_data)
 
-                self.err_ = self.sess.run([self.cross_entropy, self.train_step_combine_fl],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_cl],
                                           feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                      self.input_x_lab: self.train_one_batch_lab,
                                                      self.input_x_demo: self.train_one_batch_demo,
