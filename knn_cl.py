@@ -577,7 +577,8 @@ class knn_cl():
         self.positive_sample_norm = tf.math.l2_normalize(self.x_skip_contrast,axis=2)
 
         self.positive_dot_prod = tf.multiply(self.positive_broad_norm,self.positive_sample_norm)
-        self.positive_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2)),1)
+        #self.positive_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2)),1)
+        self.positive_dot_prod_sum = tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2))
 
         """
         negative inner product
@@ -587,13 +588,15 @@ class knn_cl():
 
         self.negative_dot_prod = tf.multiply(self.negative_broad_norm,self.negative_sample_norm)
         self.negative_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.negative_dot_prod,2)),1)
+        self.negative_dot_prod_sum = tf.expand_dims(self.negative_dot_prod_sum,1)
 
         """
         Compute normalized probability and take log form
         """
         self.denominator_normalizer = tf.math.add(self.positive_dot_prod_sum,self.negative_dot_prod_sum)
-        self.normalized_prob = tf.math.divide(self.positive_dot_prod_sum,self.denominator_normalizer)
-        self.log_normalized_prob = tf.math.negative(tf.reduce_mean(tf.math.log(self.normalized_prob),0))
+        self.normalized_prob_log = tf.math.log(tf.math.divide(self.positive_dot_prod_sum,self.denominator_normalizer))
+        self.normalized_prob_log_k = tf.reduce_sum(self.normalized_prob_log,1)
+        self.log_normalized_prob = tf.math.negative(tf.reduce_mean(self.normalized_prob_log_k,0))
 
     def config_model(self):
         self.lstm_cell()
