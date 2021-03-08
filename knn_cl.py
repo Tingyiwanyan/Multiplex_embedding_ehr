@@ -60,7 +60,7 @@ class knn_cl():
         for i in kg.dic_lab.keys():
             index = self.kg.dic_lab[i]['index']
             self.ave_lab[index] = self.kg.dic_lab[i]['mean_value']
-        random_pick_death = list(np.array(self.train_data)[0:1000])
+        random_pick_death = list(np.array(self.train_data)[0:3000])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         random_pick_death_test = list(np.array(self.test_death_data[0:300]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
@@ -1443,7 +1443,7 @@ class knn_cl():
                 print(self.err_[0])
 
 
-    def train_ce(self):
+    def train_fl(self):
         self.length_train = len(self.train_data)
         init_hidden_state = np.zeros(
             (self.batch_size, 1 + self.positive_lab_size + self.negative_lab_size, self.latent_dim))
@@ -1453,7 +1453,7 @@ class knn_cl():
             self.train_one_batch_vital, self.train_one_batch_lab, self.train_one_batch_demo, self.one_batch_logit, self.one_batch_mortality, self.one_batch_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
                 self.batch_size, i * self.batch_size, self.train_data)
 
-            self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
+            self.err_ = self.sess.run([self.cross_entropy, self.train_step_fl],
                                       feed_dict={self.input_x_vital: self.train_one_batch_vital,
                                                  self.input_x_lab: self.train_one_batch_lab,
                                                  self.input_x_demo: self.train_one_batch_demo,
