@@ -1115,12 +1115,23 @@ class knn_cl():
 
     def get_k_means_train_death(self):
         self.length_train_death = len(self.train_death_data_reduced)
-        self.train_death_matrix = np.zeros((self.length_train, self.lab_size+self.item_size))
+        self.train_death_matrix = np.zeros((self.length_train_death, self.lab_size+self.item_size))
 
         for i in range(self.length_train_death):
             central_node = self.train_death_data_reduced[i]
             patient_input = self.compute_average_patient(central_node)
             self.train_death_matrix[i, :] = patient_input
+
+        self.kmeans_train_death = KMeans(n_clusters=3, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
+
+    def get_k_mean_test_death(self):
+        self.length_test_death = len(self.test_death_data_reduced)
+        self.test_death_matrix = np.zeros((self.length_test_death,self.lab_size+self.item_size))
+
+        for i in range(self.length_test_death):
+            central_node = self.test_death_data_reduced[i]
+            patient_input = self.compute_average_patient(central_node)
+            self.test_death_matrix[i, :] = patient_input
 
         self.kmeans_train_death = KMeans(n_clusters=3, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
 
