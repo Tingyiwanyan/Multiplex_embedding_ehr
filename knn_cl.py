@@ -1124,16 +1124,16 @@ class knn_cl():
 
         self.kmeans_train_death = KMeans(n_clusters=3, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
 
-    def get_k_means_train(self):
-        self.length_train = len(self.train_data_reduced)
-        self.train_matrix = np.zeros((self.length_train_death, self.lab_size+self.item_size))
+    def get_k_means_train_non_death(self):
+        self.length_train_non_death = len(self.train_non_death_data_reduced)
+        self.train_non_death_matrix = np.zeros((self.length_train_non_death, self.lab_size+self.item_size))
 
-        for i in range(self.length_train_death):
-            central_node = self.train_death_data_reduced[i]
+        for i in range(self.length_train_non_death):
+            central_node = self.train_non_death_data_reduced[i]
             patient_input = self.compute_average_patient(central_node)
-            self.train_death_matrix[i, :] = patient_input
+            self.train_non_death_matrix[i, :] = patient_input
 
-        self.kmeans_train_death = KMeans(n_clusters=3, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
+        self.kmeans_train_non_death = KMeans(n_clusters=3, random_state=0).fit(self.train_non_death_matrix[:, self.kg.list_index])
 
     def get_k_mean_test_non_death(self):
         self.length_test_non_death = len(self.test_non_death_data_reduced)
