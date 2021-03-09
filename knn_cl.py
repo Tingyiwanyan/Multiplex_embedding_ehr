@@ -65,7 +65,7 @@ class knn_cl():
         random_pick_death_test = list(np.array(self.test_death_data[0:300]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
         reduced_data_test = [i for i in self.test_data if i not in random_pick_death_test]
-        self.train_data = reduced_data
+        #self.train_data = reduced_data
         #self.test_data = reduced_data_test
         for i in self.kg.dic_patient.keys():
             if self.kg.dic_patient[i]['death_flag'] == 1:
@@ -100,7 +100,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 5
+        self.positive_lab_size = 1
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
