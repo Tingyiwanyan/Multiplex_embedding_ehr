@@ -625,7 +625,7 @@ class knn_cl():
         self.focal_loss = tf.reduce_mean(self.focal_loss_)
         self.train_step_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.focal_loss)
         self.train_step_combine_fl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(
-            self.focal_loss + 0.4 * self.log_normalized_prob)
+            self.focal_loss + 0.2 * self.log_normalized_prob)
         self.sess = tf.InteractiveSession()
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
@@ -1110,7 +1110,7 @@ class knn_cl():
         self.test_group = []
         for i in range(6):
             index = np.where(self.kmeans_test.labels_==i)[0]
-            test = [self.test_data[i] for i in index]
+            test = [self.test_data[j] for j in index]
             self.test_group.append(test)
 
     def get_k_means_train_death(self):
@@ -1146,6 +1146,12 @@ class knn_cl():
 
         self.kmeans_test_non_death = KMeans(n_clusters=3, random_state=0).fit(self.test_non_death_matrix[:, self.kg.list_index])
 
+        self.test_non_death_group = []
+        for i in range(3):
+            index = np.where(self.kmeans_test_non_death.labels_==i)[0]
+            test = [self.test_non_death_data_reduced[j] for j in index]
+            self.test_non_death_group.append(test)
+
     def get_k_mean_test_death(self):
         self.length_test_death = len(self.test_death_data_reduced)
         self.test_death_matrix = np.zeros((self.length_test_death,self.lab_size+self.item_size))
@@ -1156,6 +1162,11 @@ class knn_cl():
             self.test_death_matrix[i, :] = patient_input
 
         self.kmeans_test_death = KMeans(n_clusters=3, random_state=0).fit(self.test_death_matrix[:, self.kg.list_index])
+        self.test_death_group = []
+        for i in range(3):
+            index = np.where(self.kmeans_test_death.labels_==i)[0]
+            test = [self.test_death_data_reduced[j] for j in index]
+            self.test_death_group.append(test)
 
 
 
