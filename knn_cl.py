@@ -1122,7 +1122,7 @@ class knn_cl():
             patient_input = self.compute_average_patient(central_node)
             self.train_death_matrix[i, :] = patient_input
 
-        self.kmeans_train_death = KMeans(n_clusters=3, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
+        self.kmeans_train_death = KMeans(n_clusters=1, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
 
     def get_k_means_train_non_death(self):
         self.length_train_non_death = len(self.train_non_death_data_reduced)
