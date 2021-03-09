@@ -100,7 +100,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 15
+        self.positive_lab_size = 5
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -1118,7 +1118,7 @@ class knn_cl():
         self.train_death_matrix = np.zeros((self.length_train, self.lab_size+self.item_size))
 
         for i in range(self.length_train_death):
-            central_node = self.test_death_data_reduced[i]
+            central_node = self.train_death_data_reduced[i]
             patient_input = self.compute_average_patient(central_node)
             self.train_death_matrix[i, :] = patient_input
 
