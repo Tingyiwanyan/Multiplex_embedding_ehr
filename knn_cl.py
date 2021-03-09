@@ -93,7 +93,7 @@ class knn_cl():
         self.latent_dim_cell_state = 100
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
-        self.epoch = 4
+        self.epoch = 1
         self.epoch_representation = 1
         self.latent_dim = self.item_size + self.lab_size
         self.com_size = 12
@@ -1124,7 +1124,7 @@ class knn_cl():
 
         self.kmeans_train_death = KMeans(n_clusters=1, random_state=0).fit(self.train_death_matrix[:, self.kg.list_index])
 
-        self.train_death_center = self.kmeans_trian_death.cluster_centers_
+        self.train_death_center = self.kmeans_train_death.cluster_centers_
 
     def get_k_means_train_non_death(self):
         self.length_train_non_death = len(self.train_non_death_data_reduced)
