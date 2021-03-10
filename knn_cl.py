@@ -60,7 +60,7 @@ class knn_cl():
         for i in kg.dic_lab.keys():
             index = self.kg.dic_lab[i]['index']
             self.ave_lab[index] = self.kg.dic_lab[i]['mean_value']
-        #random_pick_death = list(np.array(self.train_data)[0:3000])
+        random_pick_death = list(np.array(self.train_data)[0:2000])
         random_pick_non_death = list(np.array(self.train_non_death_data[0:2810]))
         random_pick_death_test = list(np.array(self.test_death_data[0:300]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
