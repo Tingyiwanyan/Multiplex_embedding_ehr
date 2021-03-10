@@ -65,7 +65,7 @@ class knn_cl():
         random_pick_death_test = list(np.array(self.test_death_data[0:300]))
         reduced_data = [i for i in self.train_data if i not in random_pick_death]
         reduced_data_test = [i for i in self.test_data if i not in random_pick_death_test]
-        self.train_data = reduced_data
+        #self.train_data = reduced_data
         #self.test_data = reduced_data_test
         for i in self.kg.dic_patient.keys():
             if self.kg.dic_patient[i]['death_flag'] == 1:
@@ -83,6 +83,7 @@ class knn_cl():
         #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
         #self.test_data = reduced_data_death
         self.gamma = 2
+        self.tau = 0.1
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
@@ -578,7 +579,7 @@ class knn_cl():
 
         self.positive_dot_prod = tf.multiply(self.positive_broad_norm,self.positive_sample_norm)
         #self.positive_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2)),1)
-        self.positive_dot_prod_sum = tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2))
+        self.positive_dot_prod_sum = tf.math.exp(tf.reduce_sum(self.positive_dot_prod, 2)/self.tau)
 
         """
         negative inner product
@@ -587,7 +588,7 @@ class knn_cl():
         self.negative_sample_norm = tf.math.l2_normalize(self.x_negative_contrast,axis=2)
 
         self.negative_dot_prod = tf.multiply(self.negative_broad_norm,self.negative_sample_norm)
-        self.negative_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.negative_dot_prod,2)),1)
+        self.negative_dot_prod_sum = tf.reduce_sum(tf.math.exp(tf.reduce_sum(self.negative_dot_prod,2)/self.tau),1)
         self.negative_dot_prod_sum = tf.expand_dims(self.negative_dot_prod_sum,1)
 
         """

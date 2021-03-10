@@ -5,11 +5,11 @@ import umap.umap_ as umap
 
 
 
-CL_k_nearest = np.load('cl_att_test_combine.npy')
-CL_k_nearest_logit = np.load('cl_att_logit_test_combine.npy')
+CL_k_nearest = np.load('pretrain_att_cl.npy')
+CL_k_nearest_logit = np.load('pretrain_att_cl_logit.npy')
 
-CL_k = np.load('cl_random_test_combine.npy')
-CL_k_logit = np.load('cl_random_logit_test_combine.npy')
+CL_k = np.load('pretrain_random_cl.npy')
+CL_k_logit = np.load('pretrain_random_cl_logit.npy')
 
 reducer = umap.UMAP()
 
