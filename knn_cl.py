@@ -83,7 +83,7 @@ class knn_cl():
         #reduced_data_death = [i for i in self.test_data if i not in random_pick_non_death]
         #self.test_data = reduced_data_death
         self.gamma = 2
-        self.tau = 0.1
+        self.tau = 0.5
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
