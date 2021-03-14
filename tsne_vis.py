@@ -5,11 +5,17 @@ import umap.umap_ as umap
 
 
 
-CL_k_nearest = np.load('pretrain_att_cl.npy')
-CL_k_nearest_logit = np.load('pretrain_att_cl_logit.npy')
+CL_k_nearest = np.load('embedding_whole_att.npy')
+CL_k_nearest_logit = np.load('embedding_whole_att_logit.npy')
 
-CL_k = np.load('pretrain_random_cl.npy')
-CL_k_logit = np.load('pretrain_random_cl_logit.npy')
+CL_k_nearest = CL_k_nearest[0:3998,:]
+CL_k_nearest_logit = CL_k_nearest_logit[0:3998,:]
+
+CL_k = np.load('embedding_whole_random.npy')
+CL_k_logit = np.load('embedding_whole_random_logit.npy')
+
+CL_k = CL_k[0:3998,:]
+CL_k_logit = CL_k_logit[0:3998,:]
 
 reducer = umap.UMAP()
 
