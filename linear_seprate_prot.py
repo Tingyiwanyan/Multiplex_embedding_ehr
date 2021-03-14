@@ -29,6 +29,7 @@ class linear_separate():
         self.input_y_logit = tf.keras.backend.placeholder([None, 1])
         self.embedding = tf.keras.backend.placeholder([None,self.latent_dim])
         self.batch_size = 16
+        self.epoch = 1
 
     def logistic_loss(self):
         self.logit_sig = tf.compat.v1.layers.dense(inputs=self.embedding,
@@ -49,7 +50,7 @@ class linear_separate():
 
     def train(self):
         iteration = np.int(np.floor(np.float(self.train_num) / self.batch_size))
-        for j in range(self.epoch_representation):
+        for j in range(self.epoch):
             print('epoch')
             print(j)
             # self.construct_knn_graph()
