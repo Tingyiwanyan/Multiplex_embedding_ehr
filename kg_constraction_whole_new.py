@@ -777,7 +777,15 @@ if __name__ == "__main__":
     with open('embedding_whole_random_logit.npy','rb') as f:
         whole_embedding_logit = np.load(f)
 
+    with open('embedding_whole_att.npy','rb') as f:
+        whole_embedding_att = np.load(f)
+
+    with open('embedding_whole_att_logit.npy','rb') as f:
+        whole_embedding_att_logit = np.load(f)
+
     ls = linear_separate(whole_embedding,whole_embedding_logit)
+
+    ls_att =linear_separate(whole_embedding_att,whole_embedding_att_logit)
 
 
 
