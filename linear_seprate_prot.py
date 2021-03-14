@@ -75,6 +75,8 @@ class linear_separate():
         self.recall_total = []
         self.out_logit_integer = np.zeros(self.out_logit.shape[0])
 
+        test_length = self.test_data.shape[0]
+
         while (threshold < 1.01):
             tp_test = 0
             fp_test = 0
