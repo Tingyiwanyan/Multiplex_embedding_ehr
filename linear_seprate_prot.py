@@ -58,7 +58,7 @@ class linear_separate():
                 self.err_ = self.sess.run([self.logistic_loss, self.train_step_log],
                                           feed_dict={self.embedding:
                                                          self.train_data[i*self.batch_size:(i+1)*self.batch_size,:],
-                                                     self.input_y_logit:self.train_logit})
+                                                     self.input_y_logit:self.train_logit[i*self.batch_size:(i+1)*self.batch_size,:]})
                 print(self.err_[0])
 
     def test(self):
@@ -66,11 +66,6 @@ class linear_separate():
 
         self.tp_correct = 0
         self.tp_neg = 0
-        for i in range(test_length):
-            if self.test_logit[i, 1] == 1:
-                self.tp_correct += 1
-            if self.test_logit[i, 0] == 1:
-                self.tp_neg += 1
 
         threshold = -1.01
         self.resolution = 0.01

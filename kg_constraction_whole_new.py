@@ -771,6 +771,14 @@ if __name__ == "__main__":
     contrastive = knn_cl(kg,process_data)
     #multi = Multiplex_network(kg)
 
+    with open('embedding_whole_random.npy','rb') as f:
+        whole_embedding = np.load(f)
+
+    with open('embedding_whole_random_logit.npy','rb') as f:
+        whole_embedding_logit = np.load(f)
+
+    ls = linear_separate(whole_embedding,whole_embedding_logit)
+
 
 
 
