@@ -101,7 +101,7 @@ class knn_cl():
         self.input_seq = []
         self.threshold = 0.5
         self.check_num_threshold_neg = 2*self.batch_size
-        self.positive_lab_size = 5
+        self.positive_lab_size = 10
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
@@ -298,7 +298,7 @@ class knn_cl():
         """
         #self.Dense_patient = tf.expand_dims(self.hidden_last,1)
         self.Dense_patient = tf.concat([self.hidden_last,self.Dense_demo],2)
-        self.Dense_patient = tf.math.l2_normalize(self.Dense_patient,axis=2)
+        #self.Dense_patient = tf.math.l2_normalize(self.Dense_patient,axis=2)
 
         """
         self.hidden_att_e = tf.matmul(self.hidden_rep,self.weight_retain_w)
