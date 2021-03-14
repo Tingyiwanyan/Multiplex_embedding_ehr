@@ -67,6 +67,13 @@ class linear_separate():
         self.tp_correct = 0
         self.tp_neg = 0
 
+        test_length = self.test_data.shape[0]
+        for i in range(test_length):
+            if self.test_logit[i, 1] == 1:
+                self.tp_correct += 1
+            if self.test_logit[i, 0] == 1:
+                self.tp_neg += 1
+
         threshold = 0
         self.resolution = 0.01
         self.tp_total = []
@@ -75,7 +82,6 @@ class linear_separate():
         self.recall_total = []
         self.out_logit_integer = np.zeros(self.out_logit.shape[0])
 
-        test_length = self.test_data.shape[0]
 
         while (threshold < 1.01):
             tp_test = 0
