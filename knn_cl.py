@@ -291,24 +291,6 @@ class knn_cl():
                                                     units=self.latent_dim_demo,
                                                     kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                     activation=tf.nn.relu)
-    """
-    def softmax_loss(self):
-        """
-        Implement softmax loss layer
-        """
-        idx_origin = tf.constant([0])
-        self.hidden_last_comb = tf.concat([self.hidden_last, self.Dense_demo], 2)
-        self.patient_lstm = tf.gather(self.hidden_last_comb, idx_origin, axis=1)
-        self.output_layer = tf.compat.v1.layers.dense(inputs=self.patient_lstm,
-                                                      units=2,
-                                                      kernel_initializer=tf.keras.initializers.he_normal(seed=None),
-                                                      activation=tf.nn.relu)
-        # self.logit_sig = tf.math.sigmoid(self.output_layer)
-        self.logit_sig = tf.nn.softmax(self.output_layer)
-        bce = tf.keras.losses.BinaryCrossentropy()
-        self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
-
-    """
 
     def build_dhgm_model(self):
         """
