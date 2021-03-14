@@ -69,9 +69,9 @@ class linear_separate():
 
         test_length = self.test_data.shape[0]
         for i in range(test_length):
-            if self.test_logit[i, 1] == 1:
+            if self.real_logit[i, 0] == 1:
                 self.tp_correct += 1
-            if self.test_logit[i, 0] == 1:
+            if self.real_logit[i, 0] == 0:
                 self.tp_neg += 1
 
         threshold = 0
