@@ -67,7 +67,7 @@ class linear_separate():
         self.tp_correct = 0
         self.tp_neg = 0
 
-        threshold = -1.01
+        threshold = 0
         self.resolution = 0.01
         self.tp_total = []
         self.fp_total = []
