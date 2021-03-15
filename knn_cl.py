@@ -87,7 +87,7 @@ class knn_cl():
         self.softmax_weight_threshold = 0.1
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
-        self.batch_size = 16
+        self.batch_size = 32
         self.time_sequence = 4
         self.time_step_length = 6
         self.predict_window_prior = self.time_sequence * self.time_step_length
@@ -595,7 +595,7 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.2*self.log_normalized_prob)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.4*self.log_normalized_prob)
         self.train_step_cl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.log_normalized_prob)
         """
         focal loss

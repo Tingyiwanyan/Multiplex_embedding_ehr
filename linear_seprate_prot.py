@@ -36,6 +36,9 @@ class linear_separate():
                                                       units=1,
                                                       kernel_initializer=tf.keras.initializers.he_normal(seed=None),
                                                       activation=tf.nn.sigmoid)
+        bce = tf.keras.losses.BinaryCrossentropy()
+        self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
+        self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.logistic_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logit_sig, labels=self.input_y_logit))
         self.train_step_log = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.logistic_loss)
         """
@@ -55,7 +58,7 @@ class linear_separate():
             print(j)
             # self.construct_knn_graph()
             for i in range(iteration):
-                self.err_ = self.sess.run([self.logistic_loss, self.train_step_log],
+                self.err_ = self.sess.run([self.cross_entropy, self.train_step_ce],
                                           feed_dict={self.embedding:
                                                          self.train_data[i*self.batch_size:(i+1)*self.batch_size,:],
                                                      self.input_y_logit:self.train_logit[i*self.batch_size:(i+1)*self.batch_size,:]})
