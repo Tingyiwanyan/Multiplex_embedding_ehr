@@ -39,8 +39,8 @@ class linear_separate():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.logistic_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logit_sig, labels=self.input_y_logit))
-        self.train_step_log = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.logistic_loss)
+        #self.logistic_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logit_sig, labels=self.input_y_logit))
+        #self.train_step_log = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.logistic_loss)
         """
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
