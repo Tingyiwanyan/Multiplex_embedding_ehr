@@ -2,20 +2,21 @@ from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import numpy as np
 import umap.umap_ as umap
+import seaborn as sns
 
 
 
 CL_k_nearest = np.load('embedding_whole_att.npy')
 CL_k_nearest_logit = np.load('embedding_whole_att_logit.npy')
 
-CL_k_nearest = CL_k_nearest[0:3998,:]
-CL_k_nearest_logit = CL_k_nearest_logit[0:3998,:]
+CL_k_nearest = CL_k_nearest[:,0:84]
+#CL_k_nearest_logit = CL_k_nearest_logit[0:3998,:]
 
 CL_k = np.load('embedding_whole_random.npy')
 CL_k_logit = np.load('embedding_whole_random_logit.npy')
 
-CL_k = CL_k[0:3998,:]
-CL_k_logit = CL_k_logit[0:3998,:]
+CL_k = CL_k[:,0:84]
+#CL_k_logit = CL_k_logit[0:3998,:]
 
 reducer = umap.UMAP()
 
