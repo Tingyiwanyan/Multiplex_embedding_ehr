@@ -596,7 +596,7 @@ class knn_cl():
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
         self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.2*self.log_normalized_prob)
-        self.train_step_cl = self.log_normalized_prob
+        self.train_step_cl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.log_normalized_prob)
         """
         focal loss
         """
