@@ -94,7 +94,7 @@ class knn_cl():
         self.latent_dim_cell_state = 100
         self.latent_dim_att = 100
         self.latent_dim_demo = 50
-        self.epoch = 1
+        self.epoch = 3
         self.epoch_representation = 1
         self.latent_dim = self.item_size + self.lab_size
         self.com_size = 12
