@@ -751,7 +751,7 @@ if __name__ == "__main__":
 
     random_pick_icu = random.sample(icu_data, 350)
     reduced_data_icu = [i for i in kg.total_data_icu if i not in random_pick_icu]
-    kg.total_data_icu = reduced_data_icu
+    #kg.total_data_icu = reduced_data_icu
 
     kg.list_index = [ 0,  1,  2,  4,  6,  9, 10, 12, 15, 19, 20, 23, 24, 26, 27, 30, 33,
        35, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 62, 65, 66, 67, 68, 75]

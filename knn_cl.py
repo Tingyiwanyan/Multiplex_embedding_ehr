@@ -1753,8 +1753,8 @@ class knn_cl():
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
         self.data_test_rf = np.mean(data, 1)
-        self.rf_auc = roc_auc_score(logit, self.svm.predict(self.data_test_rf))
-        self.rf_auprc = average_precision_score(logit, self.svm.predict(self.data_test_rf))
+        self.svm_auc = roc_auc_score(logit, self.svm.predict(self.data_test_rf))
+        self.svm_auprc = average_precision_score(logit, self.svm.predict(self.data_test_rf))
 
     def test(self, data):
         Death = np.zeros([1,2])
