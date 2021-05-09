@@ -9,6 +9,12 @@ from sklearn.metrics import recall_score
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_auc_score
 
 
 class knn_cl():
@@ -1661,6 +1667,10 @@ class knn_cl():
             #self.area_total.append(self.area)
             #self.auprc_total.append(self.area_auprc)
 
+    def train_lg(self,data):
+        test_length = len(data)
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+            test_length, 0, data)
 
     def test(self, data):
         Death = np.zeros([1,2])
