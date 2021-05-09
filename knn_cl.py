@@ -1699,7 +1699,7 @@ class knn_cl():
         data = np.concatenate([vital, lab], 2)
         data = np.mean(data, 1)
         self.lg_auc = roc_auc_score(logit, self.lr.predict_proba(data)[:, 1])
-        self.lg_auprc = average_precision_score(logit,self.lr.average_precision_score(data)[:,1])
+        self.lg_auprc = average_precision_score(logit,self.lr.predict_proba(data)[:,1])
 
     def test(self, data):
         Death = np.zeros([1,2])
