@@ -95,8 +95,8 @@ class knn_cl():
         #self.length_train = len(self.train_data)
         #self.length_test = len(self.test_data)
         self.batch_size = 32
-        self.time_sequence = 4
-        self.time_step_length = 6
+        self.time_sequence = 6
+        self.time_step_length = 8
         self.predict_window_prior = self.time_sequence * self.time_step_length
         self.latent_dim_cell_state = 100
         self.latent_dim_att = 100
@@ -1697,16 +1697,16 @@ class knn_cl():
         vital = self.test_data_batch_vital[:, :, 0, :]
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
-        data = np.mean(data, 1)
-        self.lg_auc = roc_auc_score(logit, self.lr.predict_proba(data)[:, 1])
-        self.lg_auprc = average_precision_score(logit,self.lr.predict_proba(data)[:,1])
+        self.data_test_lg = np.mean(data, 1)
+        self.lg_auc = roc_auc_score(logit, self.lr.predict_proba(self.data_test_lg)[:, 1])
+        self.lg_auprc = average_precision_score(logit,self.lr.predict_proba(self.data_test_lg)[:,1])
 
     def train_rf(self, data):
         test_length = len(data)
         self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
             test_length, 0, data)
         #self.lr = LogisticRegression(random_state=0)
-        self.rf = RandomForestClassifier(max_depth=1000, random_state=0)
+        self.rf = RandomForestClassifier(max_depth=100, random_state=0)
         logit = np.squeeze(self.real_logit, 1)
         vital = self.test_data_batch_vital[:, :, 0, :]
         lab = self.test_one_batch_lab[:, :, 0, :]
@@ -1724,9 +1724,9 @@ class knn_cl():
         vital = self.test_data_batch_vital[:, :, 0, :]
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
-        data = np.mean(data, 1)
-        self.rf_auc = roc_auc_score(logit, self.rf.predict(data))
-        self.rf_auprc = average_precision_score(logit, self.rf.predict(data))
+        self.data_test_rf = np.mean(data, 1)
+        self.rf_auc = roc_auc_score(logit, self.rf.predict(self.data_test_rf))
+        self.rf_auprc = average_precision_score(logit, self.rf.predict(self.data_test_rf))
 
     def test(self, data):
         Death = np.zeros([1,2])
