@@ -1701,6 +1701,33 @@ class knn_cl():
         self.lg_auc = roc_auc_score(logit, self.lr.predict_proba(data)[:, 1])
         self.lg_auprc = average_precision_score(logit,self.lr.predict_proba(data)[:,1])
 
+    def train_rf(self, data):
+        test_length = len(data)
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+            test_length, 0, data)
+        #self.lr = LogisticRegression(random_state=0)
+        self.rf = RandomForestClassifier(max_depth=100, random_state=0)
+        logit = np.squeeze(self.real_logit, 1)
+        vital = self.test_data_batch_vital[:, :, 0, :]
+        lab = self.test_one_batch_lab[:, :, 0, :]
+        data = np.concatenate([vital, lab], 2)
+        data = np.mean(data, 1)
+        self.rf.fit(data, logit)
+
+    def test_rf(self, data):
+        test_length = len(data)
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+            test_length, 0, data)
+        # self.lr = LogisticRegression(random_state=0)
+        # self.rf = RandomForestClassifier(max_depth=100, random_state=0)
+        logit = np.squeeze(self.real_logit, 1)
+        vital = self.test_data_batch_vital[:, :, 0, :]
+        lab = self.test_one_batch_lab[:, :, 0, :]
+        data = np.concatenate([vital, lab], 2)
+        data = np.mean(data, 1)
+        self.lg_auc = roc_auc_score(logit, self.rf.predict(data))
+        self.lg_auprc = average_precision_score(logit, self.rf.predict(data))
+
     def test(self, data):
         Death = np.zeros([1,2])
         Death[0][1] = 1
