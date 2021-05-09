@@ -886,6 +886,12 @@ class knn_cl():
         """
         get training batch data
         """
+        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
+        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
+        self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence, self.negative_lab_size, 2))
+        self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
+        self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
+
         train_one_batch_vital = np.zeros(
             (data_length, self.time_sequence, 1 + self.positive_lab_size + self.negative_lab_size, self.item_size))
         train_one_batch_lab = np.zeros(
