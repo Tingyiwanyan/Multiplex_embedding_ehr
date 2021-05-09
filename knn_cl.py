@@ -15,6 +15,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score
 
 
 class knn_cl():
@@ -1697,7 +1698,8 @@ class knn_cl():
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
         data = np.mean(data, 1)
-        print(roc_auc_score(logit, self.lr.predict_proba(data)[:, 1]))
+        self.lg_auc = roc_auc_score(logit, self.lr.predict_proba(data)[:, 1])
+        self.lg_auprc = average_precision_score(logit,self.lr.average_precision_score(data)[:,1])
 
     def test(self, data):
         Death = np.zeros([1,2])
