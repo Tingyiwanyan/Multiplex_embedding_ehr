@@ -940,7 +940,7 @@ class knn_cl():
                 self.real_logit[i,0] = 1
 
             self.get_positive_patient(self.patient_id)
-            self.get_negative_patient_batch(self.patient_id)
+            #self.get_negative_patient_batch(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
@@ -1671,6 +1671,27 @@ class knn_cl():
         test_length = len(data)
         self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
             test_length, 0, data)
+        self.lr = LogisticRegression(random_state=0)
+        #self.rf = RandomForestClassifier(max_depth=100, random_state=0)
+        logit = np.squeeze(self.real_logit,1)
+        vital = self.test_data_batch_vital[:,:,0,:]
+        lab = self.test_one_batch_lab[:,:,0,:]
+        data = np.concatenate([vital,lab],2)
+        data = np.mean(data,1)
+        self.lr.fit(data, logit)
+
+    def test_lg(self,data):
+        test_length = len(data)
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+            test_length, 0, data)
+        self.lr = LogisticRegression(random_state=0)
+        # self.rf = RandomForestClassifier(max_depth=100, random_state=0)
+        logit = np.squeeze(self.real_logit, 1)
+        vital = self.test_data_batch_vital[:, :, 0, :]
+        lab = self.test_one_batch_lab[:, :, 0, :]
+        data = np.concatenate([vital, lab], 2)
+        data = np.mean(data, 1)
+        print(roc_auc_score(logit, self.lr.predict_proba(data)[:, 1]))
 
     def test(self, data):
         Death = np.zeros([1,2])
