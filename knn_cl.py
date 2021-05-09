@@ -16,6 +16,7 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import average_precision_score
+from sklearn import svm
 
 
 class knn_cl():
@@ -1727,6 +1728,33 @@ class knn_cl():
         self.data_test_rf = np.mean(data, 1)
         self.rf_auc = roc_auc_score(logit, self.rf.predict(self.data_test_rf))
         self.rf_auprc = average_precision_score(logit, self.rf.predict(self.data_test_rf))
+
+    def train_svm(self, data):
+        test_length = len(data)
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+            test_length, 0, data)
+        #self.lr = LogisticRegression(random_state=0)
+        self.svm = svm.SVC()
+        logit = np.squeeze(self.real_logit, 1)
+        vital = self.test_data_batch_vital[:, :, 0, :]
+        lab = self.test_one_batch_lab[:, :, 0, :]
+        data = np.concatenate([vital, lab], 2)
+        data = np.mean(data, 1)
+        self.svm.fit(data, logit)
+
+    def test_svm(self, data):
+        test_length = len(data)
+        self.test_data_batch_vital, self.test_one_batch_lab, self.test_one_batch_demo, self.test_logit, self.test_mortality, self.test_com, self.one_batch_icu_intubation = self.get_batch_train_origin(
+            test_length, 0, data)
+        # self.lr = LogisticRegression(random_state=0)
+        # self.rf = RandomForestClassifier(max_depth=100, random_state=0)
+        logit = np.squeeze(self.real_logit, 1)
+        vital = self.test_data_batch_vital[:, :, 0, :]
+        lab = self.test_one_batch_lab[:, :, 0, :]
+        data = np.concatenate([vital, lab], 2)
+        self.data_test_rf = np.mean(data, 1)
+        self.rf_auc = roc_auc_score(logit, self.svm.predict(self.data_test_rf))
+        self.rf_auprc = average_precision_score(logit, self.svm.predict(self.data_test_rf))
 
     def test(self, data):
         Death = np.zeros([1,2])
