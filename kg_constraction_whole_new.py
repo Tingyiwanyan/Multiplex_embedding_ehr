@@ -745,7 +745,7 @@ if __name__ == "__main__":
     kg.total_non_death_data = [i for i in kg.total_data_mortality if i not in death_data]
 
 
-    random_pick_intubate = random.sample(intubate_data, 450)
+    random_pick_intubate = random.sample(intubate_data, 550)
     reduced_data_intubate = [i for i in kg.total_data_intubation if i not in random_pick_intubate]
     kg.total_data_intubation = reduced_data_intubate
 
