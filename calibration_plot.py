@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
 from sklearn.calibration import calibration_curve
 
-probs = np.loadtxt('out_logit_cl_full.txt')
+probs = np.loadtxt('out_logit_lg_full.txt')
 y_test = np.loadtxt('real_logit_full.txt')
 
 ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=2)
