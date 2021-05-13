@@ -1768,10 +1768,10 @@ class knn_cl():
         vital = self.test_data_batch_vital[:, :, 0, :]
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
-        self.data_test_rf = np.mean(data, 1)
+        data = np.mean(data, 1)
         self.dtrain = xgb.DMatrix(data,label=logit)
         num_round = 10
-        bst = xgb.train(self.dtrain,num_round)
+        self.bst = xgb.train(self.dtrain,num_round)
 
     def test_xgb(self, data):
         test_length = len(data)
