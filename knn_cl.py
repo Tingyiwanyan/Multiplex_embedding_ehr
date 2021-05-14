@@ -1783,8 +1783,8 @@ class knn_cl():
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
         self.data_test_xg = np.mean(data, 1)
-        self.xg_auc = roc_auc_score(logit, self.xg_model.predict(self.data_test_rf))
-        self.xg_auprc = average_precision_score(logit, self.xg_model.predict(self.data_test_rf))
+        self.xg_auc = roc_auc_score(logit, self.xg_model.predict(self.data_test_xg))
+        self.xg_auprc = average_precision_score(logit, self.xg_model.predict(self.data_test_xg))
 
 
     def test(self, data):
