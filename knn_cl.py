@@ -17,7 +17,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import average_precision_score
 from sklearn import svm
-import xgboost as xgb
+from xgboost import XGBClassifier
 
 
 class knn_cl():
@@ -604,7 +604,7 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.4*self.log_normalized_prob)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.2*self.log_normalized_prob)
         self.train_step_cl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.log_normalized_prob)
         """
         focal loss
@@ -1769,9 +1769,8 @@ class knn_cl():
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
         data = np.mean(data, 1)
-        self.dtrain = xgb.DMatrix(data,label=logit)
-        num_round = 10
-        self.bst = xgb.train(self.dtrain,num_round)
+        self.xg_model = XGBClassifier()
+        self.xg_model.fit(data,logit)
 
     def test_xgb(self, data):
         test_length = len(data)
@@ -1783,6 +1782,9 @@ class knn_cl():
         vital = self.test_data_batch_vital[:, :, 0, :]
         lab = self.test_one_batch_lab[:, :, 0, :]
         data = np.concatenate([vital, lab], 2)
+        self.data_test_xg = np.mean(data, 1)
+        self.xg_auc = roc_auc_score(logit, self.xg_model.predict(self.data_test_rf))
+        self.xg_auprc = average_precision_score(logit, self.xg_model.predict(self.data_test_rf))
 
 
     def test(self, data):
