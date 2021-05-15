@@ -747,13 +747,13 @@ if __name__ == "__main__":
 
     random_pick_intubate = random.sample(intubate_data, 550)
     reduced_data_intubate = [i for i in kg.total_data_intubation if i not in random_pick_intubate]
-    kg.total_data_intubation = reduced_data_intubate
+    #kg.total_data_intubation = reduced_data_intubate
 
     random_pick_icu = list(np.array(icu_data)[0:850])
     reduced_data_icu = [i for i in kg.total_data_icu if i not in random_pick_icu]
-    kg.total_data_icu = reduced_data_icu
+    #kg.total_data_icu = reduced_data_icu
 
-    kg.list_index = [ 0,  1,  2,  4,  6,  9, 10, 12, 15, 19, 20, 23, 24, 26, 27, 30, 33,
+    kg.list_index = [0,  1,  2,  4,  6,  9, 10, 12, 15, 19, 20, 23, 24, 26, 27, 30, 33,
        35, 44, 45, 46, 47, 48, 49, 50, 51, 52, 59, 62, 65, 66, 67, 68, 75]
     kg.list_index = list(np.array(kg.list_index)+8)
     #kg.remove_out_lier()

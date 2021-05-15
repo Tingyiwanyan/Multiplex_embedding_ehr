@@ -114,7 +114,7 @@ class knn_cl():
         length_train = len(self.train_data)
         #iteration = np.int(np.floor(np.float(length_train) / self.batch_size))
         self.check_num_threshold_pos = 4*15#self.positive_lab_size
-        self.negative_lab_size = self.batch_size-1
+        self.negative_lab_size = 15#self.batch_size-1
         self.negative_lab_size_knn = self.negative_lab_size
         self.knn_neighbor_numbers = self.positive_lab_size
         self.positive_sample_size = self.positive_lab_size# + 1
@@ -429,10 +429,10 @@ class knn_cl():
         self.positive_patient_id_list = []
         if self.kg.dic_patient[center_node_index]['death_flag'] == 0:
             flag = 0
-            neighbor_patient = self.train_non_death_data_reduced
+            neighbor_patient = self.train_non_death_data
         else:
             flag = 1
-            neighbor_patient = self.train_death_data_reduced
+            neighbor_patient = self.train_death_data
         time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
         time_seq_int = [np.int(k) for k in time_seq]
         time_seq_int.sort()
@@ -604,7 +604,7 @@ class knn_cl():
         bce = tf.keras.losses.BinaryCrossentropy()
         self.cross_entropy = bce(self.logit_sig, self.input_y_logit)
         self.train_step_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy)
-        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.2*self.log_normalized_prob)
+        self.train_step_combine_ce = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.cross_entropy+0.8*self.log_normalized_prob)
         self.train_step_cl = tf.compat.v1.train.AdamOptimizer(1e-3).minimize(self.log_normalized_prob)
         """
         focal loss
@@ -889,11 +889,11 @@ class knn_cl():
         """
         get training batch data
         """
-        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
-        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
-        self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence, self.negative_lab_size, 2))
-        self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
-        self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
+        #self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
+        #self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
+        #self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence, self.negative_lab_size, 2))
+        #self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
+        #self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
 
         train_one_batch_vital = np.zeros(
             (data_length, self.time_sequence, 1 + self.positive_lab_size + self.negative_lab_size, self.item_size))
@@ -949,7 +949,7 @@ class knn_cl():
                 self.real_logit[i,0] = 1
 
             self.get_positive_patient(self.patient_id)
-            #self.get_negative_patient(self.patient_id)
+            self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
