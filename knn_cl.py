@@ -429,10 +429,12 @@ class knn_cl():
         self.positive_patient_id_list = []
         if self.kg.dic_patient[center_node_index]['death_flag'] == 0:
             flag = 0
-            neighbor_patient = self.train_non_death_data
+            #neighbor_patient = self.train_non_death_data
+            neighbor_patient = self.kg.dic_death[0]
         else:
             flag = 1
-            neighbor_patient = self.train_death_data
+            #neighbor_patient = self.train_death_data
+            neighbor_patient = self.kg.dic_death[1]
         time_seq = self.kg.dic_patient[center_node_index]['prior_time_vital'].keys()
         time_seq_int = [np.int(k) for k in time_seq]
         time_seq_int.sort()
