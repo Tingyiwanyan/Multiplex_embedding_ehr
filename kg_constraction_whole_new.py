@@ -739,9 +739,9 @@ if __name__ == "__main__":
 
     #random_pick_death = random.sample(death_data,1200)
 
-    random_pick_death = list(np.array(death_data)[0:1150])
+    random_pick_death = list(np.array(death_data)[0:1200])
     reduced_data = [i for i in kg.total_data_mortality if i not in random_pick_death]
-    #kg.total_data_mortality = reduced_data
+    kg.total_data_mortality = reduced_data
     kg.total_non_death_data = [i for i in kg.total_data_mortality if i not in death_data]
 
 
@@ -770,6 +770,7 @@ if __name__ == "__main__":
     dhgm = dynamic_hgm(kg, process_data)
     contrastive = knn_cl(kg,process_data)
     #multi = Multiplex_network(kg)
+    MLP =  NN_model(kg,process_data)
 
     with open('embedding_whole_random.npy','rb') as f:
         whole_embedding = np.load(f)
