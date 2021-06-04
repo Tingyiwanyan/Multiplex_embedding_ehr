@@ -891,11 +891,11 @@ class knn_cl():
         """
         get training batch data
         """
-        #self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
-        #self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
-        #self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence, self.negative_lab_size, 2))
-        #self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
-        #self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
+        self.patient_neg_sample_vital = np.zeros((self.time_sequence, self.negative_lab_size, self.item_size))
+        self.patient_neg_sample_lab = np.zeros((self.time_sequence, self.negative_lab_size, self.lab_size))
+        self.patient_neg_sample_icu_intubation_label = np.zeros((self.time_sequence, self.negative_lab_size, 2))
+        self.patient_neg_sample_demo = np.zeros((self.negative_lab_size, self.demo_size))
+        self.patient_neg_sample_com = np.zeros((self.negative_lab_size, self.com_size))
 
         train_one_batch_vital = np.zeros(
             (data_length, self.time_sequence, 1 + self.positive_lab_size + self.negative_lab_size, self.item_size))
@@ -951,7 +951,7 @@ class knn_cl():
                 self.real_logit[i,0] = 1
 
             self.get_positive_patient(self.patient_id)
-            self.get_negative_patient(self.patient_id)
+            #self.get_negative_patient(self.patient_id)
             train_one_data_vital = np.concatenate((self.patient_pos_sample_vital, self.patient_neg_sample_vital),
                                                   axis=1)
             train_one_data_lab = np.concatenate((self.patient_pos_sample_lab, self.patient_neg_sample_lab), axis=1)
