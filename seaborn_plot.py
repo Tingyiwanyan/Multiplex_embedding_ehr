@@ -83,7 +83,7 @@ CL_k = reducer.fit_transform(CL_k)
 CL_k_att = reducer.fit_transform(CL_k_att)
 CL_k_feature = reducer.fit_transform(CL_k_feature)
 
-
+"""
 kmeans_train_death_att = KMeans(n_clusters=3, random_state=0).fit(CL_k_att[np.where(CL_k_att_logit==1)[0],:])
 CL_k_att_death = CL_k_att[np.where(CL_k_att_logit==1)[0],:]
 label_death_att = kmeans_train_death_att.labels_
@@ -112,7 +112,7 @@ kmeans_train_death = KMeans(n_clusters=3, random_state=0).fit(CL_k[np.where(CL_k
 #train_death_center = kmeans_train_death.cluster_centers_
 
 kmeans_train_live = KMeans(n_clusters=3, random_state=0).fit(CL_k[np.where(CL_k_logit==0)[0],:])
-
+"""
 #train_live_center = kmeans_train_live.cluster_centers_
 
 
@@ -199,7 +199,7 @@ train_live_center = np.array([rotate(CL_k_center,train_live_center[0],np.pi/8)])
 
 df = pd.DataFrame({"UMAP-1":CL_k[:,0], "UMAP-2":CL_k[:,1], "Mortality":CL_k_logit_text})
 #sns.kdeplot(data=df, x="waiting", y="duration",hue="kind",)#fill=True,)
-k = sns.jointplot(data=df, x='UMAP-1', y='UMAP-2',hue="Mortality",marker='o').plot_joint(sns.kdeplot,levels=7)
+k = sns.jointplot(data=df, x='UMAP-1', y='UMAP-2',hue="Mortality",marker='o',color='r').plot_joint(sns.kdeplot,levels=7)
 k.ax_joint.plot(train_death_center[0][0], train_death_center[0][1], marker='o',color='g',ms=10)
 k.ax_joint.plot(train_live_center[0][0], train_live_center[0][1], marker='o',color='r',ms=10)
 plt.show()
